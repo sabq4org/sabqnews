@@ -1,11 +1,13 @@
-import { notFound } from 'next/navigation';
+import { getDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
-import { getDb } from '@/lib/db';
 import { articles, categories, users } from '@/drizzle/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, ne } from 'drizzle-orm';
 import { Calendar, User, Eye, Share2, Facebook, Twitter, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import AISummary from '@/components/AISummary';
+import RecommendationsSection from '@/components/RecommendationsSection';
 
 interface ArticlePageProps {
   params: {
@@ -35,6 +37,31 @@ async function getArticle(slug: string) {
   return result[0];
 }
 
+async function getRelatedArticles(articleId: string, categoryId: string | null) {
+  const db = getDb();
+  
+  if (!categoryId) return [];
+
+  const relatedArticles = await db
+    .select({
+      id: articles.id,
+      title: articles.title,
+      slug: articles.slug,
+      excerpt: articles.excerpt,
+      featuredImage: articles.featuredImage,
+      publishedAt: articles.publishedAt,
+      category: categories.name,
+      isFeatured: articles.isFeatured,
+      isBreaking: articles.isBreaking,
+    })
+    .from(articles)
+    .leftJoin(categories, eq(articles.categoryId, categories.id))
+    .where(and(eq(articles.categoryId, categoryId), ne(articles.id, articleId)))
+    .limit(3);
+
+  return relatedArticles;
+}
+
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const data = await getArticle(params.slug);
 
@@ -43,37 +70,28 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const { article, category, author } = data;
+  const relatedArticles = await getRelatedArticles(article.id, article.categoryId);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link href="/" className="text-2xl font-bold text-blue-600">
-            سبق
-          </Link>
-        </div>
-      </header>
-
-      {/* Article */}
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Category */}
         {category && (
           <Link
             href={`/categories/${category.slug}`}
-            className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-4 hover:bg-blue-200"
+            className="inline-block px-3 py-1 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 rounded-full text-sm font-medium mb-4 hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors"
           >
             {category.name}
           </Link>
         )}
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-gray-900 mb-4" dir="rtl">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4" dir="rtl">
           {article.title}
         </h1>
 
         {/* Meta */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-6">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-6">
           {author && (
             <div className="flex items-center gap-2">
               <User className="w-4 h-4" />
@@ -96,9 +114,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
         </div>
 
+        {/* AI Summary */}
+        <AISummary summary={article.excerpt || ''} />
+
         {/* Featured Image */}
         {article.featuredImage && (
-          <div className="mb-8 rounded-lg overflow-hidden">
+          <div className="my-8 rounded-lg overflow-hidden shadow-lg">
             <img
               src={article.featuredImage}
               alt={article.title}
@@ -107,65 +128,32 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
         )}
 
-        {/* Excerpt */}
-        {article.excerpt && (
-          <div className="mb-6 p-4 bg-blue-50 border-r-4 border-blue-600 rounded">
-            <p className="text-lg text-gray-700 leading-relaxed" dir="rtl">
-              {article.excerpt}
-            </p>
-          </div>
-        )}
-
         {/* Content */}
         <div
-          className="prose prose-lg max-w-none mb-8"
+          className="prose prose-lg max-w-none mb-8 dark:prose-invert"
           dir="rtl"
           dangerouslySetInnerHTML={{ __html: article.content as string }}
         />
 
         {/* Share */}
-        <div className="border-t border-b border-gray-200 py-6 mb-8">
+        <div className="border-t border-b border-gray-200 dark:border-gray-700 py-6 mb-8">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">شارك المقال</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">شارك المقال</h3>
             <div className="flex gap-3">
               <button
-                onClick={() => {
-                  const url = window.location.href;
-                  const text = article.title;
-                  window.open(
-                    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-                    '_blank'
-                  );
-                }}
-                className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
                 title="مشاركة على فيسبوك"
               >
                 <Facebook className="w-5 h-5" />
               </button>
               <button
-                onClick={() => {
-                  const url = window.location.href;
-                  const text = article.title;
-                  window.open(
-                    `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
-                    '_blank'
-                  );
-                }}
-                className="p-2 bg-sky-500 text-white rounded-full hover:bg-sky-600"
+                className="p-2 bg-sky-500 text-white rounded-full hover:bg-sky-600 transition-colors"
                 title="مشاركة على تويتر"
               >
                 <Twitter className="w-5 h-5" />
               </button>
               <button
-                onClick={() => {
-                  const url = window.location.href;
-                  const text = article.title;
-                  window.open(
-                    `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`,
-                    '_blank'
-                  );
-                }}
-                className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700"
+                className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
                 title="مشاركة على واتساب"
               >
                 <MessageCircle className="w-5 h-5" />
@@ -177,12 +165,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         {/* Tags */}
         {article.tags && article.tags.length > 0 && (
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">الوسوم</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">الوسوم</h3>
             <div className="flex flex-wrap gap-2">
               {(article.tags as string[]).map((tag, index) => (
                 <span
                   key={index}
-                  className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                  className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm"
                 >
                   #{tag}
                 </span>
@@ -192,14 +180,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         )}
       </article>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <p className="text-gray-400">© 2025 سبق الإخبارية. جميع الحقوق محفوظة.</p>
-          </div>
-        </div>
-      </footer>
+      {/* Related Articles */}
+      <RecommendationsSection articles={relatedArticles} title="مقالات ذات صلة" />
     </div>
   );
 }

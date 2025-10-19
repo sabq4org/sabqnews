@@ -21,7 +21,7 @@ import {
 // Enums
 // ============================================
 export const userRoleEnum = pgEnum("user_role", ["user", "writer", "editor", "admin"]);
-export const articleStatusEnum = pgEnum("article_status", ["draft", "published", "archived"]);
+export const articleStatusEnum = pgEnum("article_status", ["draft", "review", "approved", "scheduled", "published", "killed"]);
 export const commentStatusEnum = pgEnum("comment_status", ["pending", "approved", "rejected"]);
 export const notificationTypeEnum = pgEnum("notification_type", ["info", "warning", "success", "error"]);
 
@@ -90,7 +90,7 @@ export const articles = pgTable(
     id: varchar("id", { length: 64 }).primaryKey(),
     title: varchar("title", { length: 500 }).notNull(),
     slug: varchar("slug", { length: 500 }).notNull().unique(),
-    content: text("content").notNull(),
+    content: json("content").$type<any>().notNull(), // Blocks Editor content
     excerpt: text("excerpt"),
     authorId: varchar("author_id", { length: 64 }).notNull(),
     categoryId: varchar("category_id", { length: 64 }),
@@ -101,6 +101,7 @@ export const articles = pgTable(
     likes: integer("likes").default(0),
     isFeatured: boolean("is_featured").default(false),
     isBreaking: boolean("is_breaking").default(false),
+    scheduledAt: timestamp("scheduled_at"),
     publishedAt: timestamp("published_at"),
     seoTitle: varchar("seo_title", { length: 255 }),
     seoDescription: text("seo_description"),
@@ -110,6 +111,8 @@ export const articles = pgTable(
     audioUrl: varchar("audio_url", { length: 500 }),
     sourceUrl: varchar("source_url", { length: 500 }),
     sourceName: varchar("source_name", { length: 255 }),
+    currentRevision: integer("current_revision").default(1),
+    lastEditedBy: varchar("last_edited_by", { length: 64 }),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
@@ -283,4 +286,171 @@ export const activityLogs = pgTable(
 
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type InsertActivityLog = typeof activityLogs.$inferInsert;
+
+
+
+// ============================================
+// جدول مراجعات المقالات (Article Revisions)
+// ============================================
+export const articleRevisions = pgTable(
+  "article_revisions",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    articleId: varchar("article_id", { length: 64 }).notNull(),
+    revisionNumber: integer("revision_number").notNull(),
+    title: varchar("title", { length: 500 }).notNull(),
+    content: json("content").$type<any>().notNull(),
+    excerpt: text("excerpt"),
+    changes: json("changes").$type<any>(), // Diff من النسخة السابقة
+    editedBy: varchar("edited_by", { length: 64 }).notNull(),
+    editReason: text("edit_reason"),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    articleIdx: index("article_revisions_article_idx").on(table.articleId),
+    revisionIdx: index("article_revisions_revision_idx").on(table.articleId, table.revisionNumber),
+  })
+);
+
+export type ArticleRevision = typeof articleRevisions.$inferSelect;
+export type InsertArticleRevision = typeof articleRevisions.$inferInsert;
+
+// ============================================
+// جدول الملاحظات التحريرية (Editorial Comments)
+// ============================================
+export const editorialComments = pgTable(
+  "editorial_comments",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    articleId: varchar("article_id", { length: 64 }).notNull(),
+    userId: varchar("user_id", { length: 64 }).notNull(),
+    blockId: varchar("block_id", { length: 64 }), // معرف الفقرة في Blocks Editor
+    content: text("content").notNull(),
+    isResolved: boolean("is_resolved").default(false),
+    resolvedBy: varchar("resolved_by", { length: 64 }),
+    resolvedAt: timestamp("resolved_at"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    articleIdx: index("editorial_comments_article_idx").on(table.articleId),
+    userIdx: index("editorial_comments_user_idx").on(table.userId),
+    blockIdx: index("editorial_comments_block_idx").on(table.blockId),
+    resolvedIdx: index("editorial_comments_resolved_idx").on(table.isResolved),
+  })
+);
+
+export type EditorialComment = typeof editorialComments.$inferSelect;
+export type InsertEditorialComment = typeof editorialComments.$inferInsert;
+
+// ============================================
+// جدول سير العمل التحريري (Workflow History)
+// ============================================
+export const workflowHistory = pgTable(
+  "workflow_history",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    articleId: varchar("article_id", { length: 64 }).notNull(),
+    fromStatus: articleStatusEnum("from_status").notNull(),
+    toStatus: articleStatusEnum("to_status").notNull(),
+    userId: varchar("user_id", { length: 64 }).notNull(),
+    comment: text("comment"),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    articleIdx: index("workflow_history_article_idx").on(table.articleId),
+    userIdx: index("workflow_history_user_idx").on(table.userId),
+    statusIdx: index("workflow_history_status_idx").on(table.toStatus),
+  })
+);
+
+export type WorkflowHistory = typeof workflowHistory.$inferSelect;
+export type InsertWorkflowHistory = typeof workflowHistory.$inferInsert;
+
+// ============================================
+// جدول الوسوم (Tags)
+// ============================================
+export const tags = pgTable(
+  "tags",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    name: varchar("name", { length: 255 }).notNull().unique(),
+    slug: varchar("slug", { length: 255 }).notNull().unique(),
+    description: text("description"),
+    usageCount: integer("usage_count").default(0),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    slugIdx: uniqueIndex("tags_slug_idx").on(table.slug),
+    nameIdx: index("tags_name_idx").on(table.name),
+  })
+);
+
+export type Tag = typeof tags.$inferSelect;
+export type InsertTag = typeof tags.$inferInsert;
+
+// ============================================
+// جدول علاقة المقالات بالوسوم (Article Tags)
+// ============================================
+export const articleTags = pgTable(
+  "article_tags",
+  {
+    articleId: varchar("article_id", { length: 64 }).notNull(),
+    tagId: varchar("tag_id", { length: 64 }).notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    pk: index("article_tags_pk").on(table.articleId, table.tagId),
+    articleIdx: index("article_tags_article_idx").on(table.articleId),
+    tagIdx: index("article_tags_tag_idx").on(table.tagId),
+  })
+);
+
+export type ArticleTag = typeof articleTags.$inferSelect;
+export type InsertArticleTag = typeof articleTags.$inferInsert;
+
+// ============================================
+// جدول الموضوعات الخاصة (Topics/Series)
+// ============================================
+export const topics = pgTable(
+  "topics",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    name: varchar("name", { length: 255 }).notNull(),
+    slug: varchar("slug", { length: 255 }).notNull().unique(),
+    description: text("description"),
+    coverImage: varchar("cover_image", { length: 500 }),
+    isActive: boolean("is_active").default(true),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    slugIdx: uniqueIndex("topics_slug_idx").on(table.slug),
+    activeIdx: index("topics_active_idx").on(table.isActive),
+  })
+);
+
+export type Topic = typeof topics.$inferSelect;
+export type InsertTopic = typeof topics.$inferInsert;
+
+// ============================================
+// جدول علاقة المقالات بالموضوعات (Article Topics)
+// ============================================
+export const articleTopics = pgTable(
+  "article_topics",
+  {
+    articleId: varchar("article_id", { length: 64 }).notNull(),
+    topicId: varchar("topic_id", { length: 64 }).notNull(),
+    displayOrder: integer("display_order").default(0),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    pk: index("article_topics_pk").on(table.articleId, table.topicId),
+    articleIdx: index("article_topics_article_idx").on(table.articleId),
+    topicIdx: index("article_topics_topic_idx").on(table.topicId),
+  })
+);
+
+export type ArticleTopic = typeof articleTopics.$inferSelect;
+export type InsertArticleTopic = typeof articleTopics.$inferInsert;
 

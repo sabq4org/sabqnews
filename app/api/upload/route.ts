@@ -29,9 +29,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    // رفع الصورة إلى Vercel Blob
+    // رفع الصورة إلى Vercel Blob مع إضافة لاحقة عشوائية لتجنب التداخل
     const blob = await put(file.name, file, {
       access: 'public',
+      addRandomSuffix: true,
     });
 
     return NextResponse.json({

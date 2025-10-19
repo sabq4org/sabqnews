@@ -76,10 +76,10 @@ export default async function CategoriesPage() {
                   )}
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors duration-300 flex items-center justify-center">
                     <div className="text-center">
-                      {category.icon && (
+                      {category.iconUrl && (
                         <div className="mb-2">
                           <DynamicIcon
-                            name={category.icon as IconName}
+                            name={category.iconUrl as IconName}
                             className="mx-auto w-12 h-12 text-white filter brightness-0 invert group-hover:brightness-100 group-hover:invert-0 transition-all duration-300"
                           />
                         </div>

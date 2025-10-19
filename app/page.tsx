@@ -87,7 +87,7 @@ export default function Home() {
                   </p>
                 )}
                 <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>{article.authorName}</span>
+                  <span>{article.authorId}</span>
                   <span>
                     {new Date(article.publishedAt || "").toLocaleDateString(
                       "ar-SA"

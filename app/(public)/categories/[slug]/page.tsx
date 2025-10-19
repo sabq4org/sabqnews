@@ -30,7 +30,6 @@ async function getCategoryWithArticles(slug: string) {
   }
 
   const category = categoryResult[0];
-  console.log("Category data (server-side):", category);
 
   // Get articles in this category
   const categoryArticles = await db
@@ -69,7 +68,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
       {/* Category Header */}
       {/* Remove py-12 to connect directly to header */}
-      <div className="relative text-white overflow-hidden bg-gradient-to-br from-gray-900 to-gray-700">
+      <div className="relative text-white overflow-hidden bg-gray-900">
         {/* Adjust height and remove padding/margin from top */}
         <div className="relative h-72 md:h-96 flex items-center justify-center pt-12 md:pt-16">
           {category.heroImage && (
@@ -77,19 +76,21 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               src={category.heroImage}
               alt={category.name}
               fill
-              className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-300"
+              className="absolute inset-0 w-full h-full object-cover opacity-40 transition-opacity duration-300"
+              unoptimized // Added unoptimized to bypass Next.js Image optimization for external URLs
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
           )}
-          <div className="relative z-10 text-center text-white p-4 bg-black bg-opacity-60 rounded-lg shadow-lg mx-4">
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-2 drop-shadow-lg" dir="rtl">
+          <div className="relative z-10 text-center text-white p-6 bg-black bg-opacity-60 rounded-lg shadow-2xl mx-4 max-w-3xl">
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-3 drop-shadow-lg leading-tight" dir="rtl">
               {category.name}
             </h1>
-            <div className="flex items-center justify-center gap-4 text-base md:text-xl text-blue-100">
-              <span dir="rtl"><FileText className="inline-block w-5 h-5 ml-1" /> {categoryArticles.length} مقال</span>
-              <span dir="rtl"><Eye className="inline-block w-5 h-5 ml-1" /> {category.totalViews || 0} مشاهدة</span>
+            <div className="flex items-center justify-center gap-4 text-base md:text-xl text-gray-200 mt-2">
+              <span dir="rtl" className="flex items-center"><FileText className="inline-block w-5 h-5 ml-1" /> {categoryArticles.length} مقال</span>
+              <span dir="rtl" className="flex items-center"><Eye className="inline-block w-5 h-5 ml-1" /> {category.totalViews || 0} مشاهدة</span>
             </div>
             {category.description && (
-              <p className="text-base md:text-xl text-blue-100 mt-2 max-w-2xl mx-auto" dir="rtl">
+              <p className="text-base md:text-xl text-gray-300 mt-4 max-w-2xl mx-auto leading-relaxed" dir="rtl">
                 {category.description}
               </p>
             )}

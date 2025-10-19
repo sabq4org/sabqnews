@@ -18,11 +18,14 @@ export async function POST(request: NextRequest) {
 
     const db = await getDb();
     if (!db) {
+      console.error('[Login] Database connection failed');
       return NextResponse.json(
         { error: 'خطأ في الاتصال بقاعدة البيانات' },
         { status: 500 }
       );
     }
+
+    console.log('[Login] Searching for user:', email);
 
     // البحث عن المستخدم
     const [user] = await db
@@ -31,7 +34,18 @@ export async function POST(request: NextRequest) {
       .where(eq(users.email, email))
       .limit(1);
 
+    console.log('[Login] User found:', user ? 'Yes' : 'No');
+    if (user) {
+      console.log('[Login] User details:', {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        hasPassword: !!user.password
+      });
+    }
+
     if (!user) {
+      console.error('[Login] User not found for email:', email);
       return NextResponse.json(
         { error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' },
         { status: 401 }

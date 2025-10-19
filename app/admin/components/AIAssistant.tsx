@@ -19,8 +19,15 @@ interface AIAssistantProps {
   content: string;
   onApplySummary?: (summary: string) => void;
   onApplyTitle?: (title: string) => void;
+  onApplySubtitle?: (subtitle: string) => void;
   onApplyKeywords?: (keywords: string[]) => void;
-  onApplySEO?: (description: string) => void;
+  onApplySEO?: (seoData: { title?: string; description?: string }) => void;
+  onApplyEditorialElements?: (elements: {
+    mainTitle: string;
+    subtitle: string;
+    summary: string;
+    keywords: string[];
+  }) => void;
 }
 
 export default function AIAssistant({
@@ -28,11 +35,13 @@ export default function AIAssistant({
   content,
   onApplySummary,
   onApplyTitle,
+  onApplySubtitle,
   onApplyKeywords,
   onApplySEO,
+  onApplyEditorialElements,
 }: AIAssistantProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState<'summary' | 'titles' | 'keywords' | 'sentiment' | 'seo' | 'full'>('summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'titles' | 'keywords' | 'sentiment' | 'seo' | 'full' | 'editorial'>('editorial');
 
   // Mutations
   const generateSummary = trpc.ai.generateSummary.useMutation();
@@ -41,6 +50,7 @@ export default function AIAssistant({
   const analyzeSentiment = trpc.ai.analyzeSentiment.useMutation();
   const generateSEO = trpc.ai.generateSEODescription.useMutation();
   const analyzeArticle = trpc.ai.analyzeArticle.useMutation();
+  const generateEditorial = trpc.ai.generateEditorialElements.useMutation();
 
   const handleGenerateSummary = async () => {
     if (!content || content.length < 100) {
@@ -129,6 +139,22 @@ export default function AIAssistant({
     }
   };
 
+  const handleGenerateEditorial = async () => {
+    if (!content || content.length < 100) {
+      alert('المحتوى قصير جداً');
+      return;
+    }
+
+    try {
+      const result = await generateEditorial.mutateAsync({ content });
+      if (onApplyEditorialElements) {
+        onApplyEditorialElements(result);
+      }
+    } catch (error: any) {
+      alert('حدث خطأ: ' + error.message);
+    }
+  };
+
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
       case 'positive':
@@ -174,6 +200,17 @@ export default function AIAssistant({
         <div className="p-4 border-t border-purple-200 bg-white">
           {/* Tabs */}
           <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+            <button
+              onClick={() => setActiveTab('editorial')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm whitespace-nowrap ${
+                activeTab === 'editorial'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              توليد شامل
+            </button>
             <button
               onClick={() => setActiveTab('summary')}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm whitespace-nowrap ${
@@ -244,6 +281,81 @@ export default function AIAssistant({
 
           {/* Tab Content */}
           <div className="space-y-4">
+            {/* Editorial Tab */}
+            {activeTab === 'editorial' && (
+              <div className="space-y-3">
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800" dir="rtl">
+                    سيتم توليد جميع العناصر التحريرية دفعة واحدة: العنوان الرئيسي، العنوان الفرعي، الملخص، والكلمات المفتاحية.
+                  </p>
+                </div>
+                <button
+                  onClick={handleGenerateEditorial}
+                  disabled={generateEditorial.isPending}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 font-semibold"
+                >
+                  {generateEditorial.isPending ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      جاري التوليد...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      توليد جميع العناصر
+                    </>
+                  )}
+                </button>
+
+                {generateEditorial.data && (
+                  <div className="space-y-3">
+                    <div className="p-4 bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+                      <h4 className="font-semibold text-purple-900 mb-2">العنوان الرئيسي</h4>
+                      <p className="text-gray-800 font-medium" dir="rtl">
+                        {generateEditorial.data.mainTitle}
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                      <h4 className="font-semibold text-blue-900 mb-2">العنوان الفرعي</h4>
+                      <p className="text-gray-700" dir="rtl">
+                        {generateEditorial.data.subtitle}
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-gradient-to-br from-green-50 to-teal-50 border border-green-200 rounded-lg">
+                      <h4 className="font-semibold text-green-900 mb-2">الملخص</h4>
+                      <p className="text-gray-700 leading-relaxed" dir="rtl">
+                        {generateEditorial.data.summary}
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-gradient-to-br from-orange-50 to-yellow-50 border border-orange-200 rounded-lg">
+                      <h4 className="font-semibold text-orange-900 mb-2">الكلمات المفتاحية</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {generateEditorial.data.keywords.map((keyword, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm"
+                          >
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => onApplyEditorialElements && onApplyEditorialElements(generateEditorial.data!)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      تطبيق جميع العناصر
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Summary Tab */}
             {activeTab === 'summary' && (
               <div className="space-y-3">

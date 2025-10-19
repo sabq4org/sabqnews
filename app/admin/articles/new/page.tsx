@@ -324,9 +324,17 @@ export default function NewArticlePage() {
               title={title}
               onApplySummary={setExcerpt}
               onApplyTitle={setTitle}
+              onApplySubtitle={setSubtitle}
+              onApplyKeywords={(keywords) => setKeywords(keywords)}
               onApplySEO={(seoData) => {
                 if (seoData.title) setSeoTitle(seoData.title);
                 if (seoData.description) setSeoDescription(seoData.description);
+              }}
+              onApplyEditorialElements={(elements) => {
+                setTitle(elements.mainTitle);
+                setSubtitle(elements.subtitle);
+                setExcerpt(elements.summary);
+                setKeywords(elements.keywords);
               }}
             />
 

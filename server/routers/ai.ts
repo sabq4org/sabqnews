@@ -9,6 +9,7 @@ import {
   generateSuggestions,
   generateSEODescription,
   analyzeArticle,
+  generateEditorialElements,
 } from '@/lib/ai-services';
 
 export const aiRouter = router({
@@ -115,6 +116,17 @@ export const aiRouter = router({
     .mutation(async ({ input }) => {
       const analysis = await analyzeArticle(input.content, input.title);
       return analysis;
+    }),
+
+  /**
+   * توليد جميع العناصر التحريرية دفعة واحدة
+   * (العنوان الرئيسي، العنوان الفرعي، الملخص، الكلمات المفتاحية)
+   */
+  generateEditorialElements: protectedProcedure
+    .input(z.object({ content: z.string().min(100) }))
+    .mutation(async ({ input }) => {
+      const elements = await generateEditorialElements(input.content);
+      return elements;
     }),
 });
 

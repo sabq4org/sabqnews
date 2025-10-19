@@ -81,19 +81,21 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
             </>
           )}
-          <div className="relative z-10 text-center text-white p-6 max-w-3xl w-full mx-auto">
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-2 drop-shadow-lg leading-tight" dir="rtl">
+          {/* Container for category name, description, and stats */}
+          <div className="relative z-10 text-center text-white max-w-3xl w-full mx-auto">
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-2 drop-shadow-lg leading-tight p-2" dir="rtl">
               {category.name}
             </h1>
-            <div className="flex items-center justify-center gap-4 text-base md:text-xl text-gray-200 mt-3">
-              <span dir="rtl" className="flex items-center"><FileText className="inline-block w-5 h-5 ml-1" /> {categoryArticles.length} مقال</span>
-              <span dir="rtl" className="flex items-center"><Eye className="inline-block w-5 h-5 ml-1" /> {category.totalViews || 0} مشاهدة</span>
-            </div>
             {category.description && (
-              <p className="text-base md:text-xl text-gray-300 mt-3 max-w-2xl mx-auto leading-relaxed" dir="rtl">
+              <p className="text-base md:text-xl text-gray-300 mt-3 max-w-2xl mx-auto leading-relaxed p-2" dir="rtl">
                 {category.description}
               </p>
             )}
+            {/* Transparent label for stats */}
+            <div className="inline-flex items-center justify-center gap-4 text-base md:text-xl text-gray-200 mt-4 px-4 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
+              <span dir="rtl" className="flex items-center"><FileText className="inline-block w-5 h-5 ml-1" /> {categoryArticles.length} مقال</span>
+              <span dir="rtl" className="flex items-center"><Eye className="inline-block w-5 h-5 ml-1" /> {category.totalViews || 0} مشاهدة</span>
+            </div>
           </div>
         </div>
       </div>

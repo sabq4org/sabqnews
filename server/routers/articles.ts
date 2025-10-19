@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { eq } from 'drizzle-orm';
+
 import { nanoid } from 'nanoid';
 import { protectedProcedure, publicProcedure, router } from "../trpc";
 import { getDb } from '@/lib/db';

@@ -74,30 +74,27 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <Image
                 src={category.heroImage}
                 alt={category.name}
-                fill
-                className="absolute inset-0 w-full h-full object-contain object-center opacity-40 transition-opacity duration-300"
-                unoptimized // Added unoptimized to bypass Next.js Image optimization for external URLs
+                            className="absolute inset-0 w-full h-full object-cover object-center opacity-40 transition-opacity duration-300"           unoptimized // Added unoptimized to bypass Next.js Image optimization for external URLs
               />
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
             </>
           )}
           {/* Container for category name, description, and stats */}
-          <div className="relative z-10 text-center text-white max-w-3xl w-full mx-auto">
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-2 drop-shadow-lg leading-tight p-2" dir="rtl">
+          <div className="relative z-10 text-center text-white max-w-4xl w-full mx-auto p-4 md:p-6">
+            <h1 className="text-5xl md:text-7xl font-extrabold mb-3 drop-shadow-lg leading-tight p-2 text-shadow-lg" dir="rtl">
               {category.name}
             </h1>
             {category.description && (
-              <p className="text-base md:text-xl text-gray-300 mt-3 max-w-2xl mx-auto leading-relaxed p-2" dir="rtl">
+              <p className="text-lg md:text-2xl text-gray-200 mt-4 max-w-2xl mx-auto leading-relaxed p-2 text-shadow-md" dir="rtl">
                 {category.description}
               </p>
             )}
             {/* Transparent label for stats */}
             {/* Transparent labels for stats */}
-            <div className="flex items-center justify-center gap-4 mt-4">
-              <span dir="rtl" className="flex items-center text-base md:text-xl text-gray-200 px-4 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
+            <div className="flex flex-wrap justify-center gap-4 mt-6">              <span dir="rtl" className="flex items-center text-lg md:text-xl text-white px-5 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
                 <FileText className="inline-block w-5 h-5 ml-2" /> {categoryArticles.length} مقال
               </span>
-              <span dir="rtl" className="flex items-center text-base md:text-xl text-gray-200 px-4 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
+              <span dir="rtl" className="flex items-center text-lg md:text-xl text-white px-5 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
                 <Eye className="inline-block w-5 h-5 ml-2" /> {category.totalViews || 0} مشاهدة
               </span>
             </div>

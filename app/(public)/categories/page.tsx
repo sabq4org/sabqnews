@@ -4,6 +4,7 @@ import { eq, count } from "drizzle-orm";
 import Link from "next/link";
 import Image from "next/image";
 import DynamicIcon, { IconName } from "@/components/DynamicIcon";
+import { FileText } from "lucide-react";
 
 
 export const dynamic = 'force-dynamic';

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { getDb } from '@/lib/db';
-import { generateSummary, generateRecommendations } from '@/lib/ai-services';
+import { generateSummary, generateRelatedArticles } from '@/lib/ai-services';
 
 export const dynamic = 'force-dynamic';
 import { articles, categories, users } from '@/drizzle/schema';
@@ -87,7 +87,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   // Generate AI recommendations if article has tags (keywords)
   let aiRecommendations: { title: string; slug: string }[] = [];
   if (article.tags && Array.isArray(article.tags) && article.tags.length > 0) {
-    aiRecommendations = await generateRecommendations(
+    aiRecommendations = await generateRelatedArticles(
       article.content as string,
       article.title,
       category?.name || '',

@@ -52,7 +52,7 @@ export const articlesRouter = router({
         .where(and(...conditions));
 
       return {
-        articles: allArticles.map((article) => ({ ...article, content: undefined })),
+        articles: allArticles.map((article: any) => ({ ...article, content: undefined })),
         total: totalArticles[0].count,
       };
     }),

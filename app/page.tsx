@@ -107,45 +107,6 @@ export default function Home() {
                 </div>
               )}
             </section>
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
-                    {articles[0].featuredImage && (
-                      <img
-                        src={articles[0].featuredImage}
-                        alt={articles[0].title}
-                        className="w-full h-64 md:h-auto object-cover"
-                      />
-                    )}
-                    <div className="md:col-span-2 p-6">
-                      <h3 className="text-2xl font-bold mb-3 text-gray-900">
-                        <Link
-                          href={`/article/${articles[0].slug}`}
-                          className="hover:text-blue-600"
-                        >
-                          {articles[0].title}
-                        </Link>
-                      </h3>
-                      {articles[0].excerpt && (
-                        <p className="text-gray-600 mb-4">{articles[0].excerpt}</p>
-                      )}
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <span>👤 {articles[0].authorId}</span>
-                        <span>
-                          📅{" "}
-                          {articles[0].publishedAt
-                            ? new Date(articles[0].publishedAt).toLocaleDateString("ar-SA")
-                            : ""}
-                        </span>
-                      </div>
-                      <div className="flex gap-4 mt-4 text-sm text-gray-600">
-                        <span>👁️ {articles[0].views || 0} مشاهدة</span>
-                        <span>❤️ {articles[0].likes || 0} إعجاب</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </section>
 
             {/* Latest Articles */}
             <section>

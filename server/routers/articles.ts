@@ -1,5 +1,7 @@
 import { z } from 'zod';
-import { protectedProcedure, publicProcedure, router } from '../trpc';
+import { eq } from 'drizzle-orm';
+import { nanoid } from 'nanoid';
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 import { getDb } from '@/lib/db';
 import { 
   articles, 
@@ -116,11 +118,21 @@ export const articlesRouter = router({
       const db = getDb();
       const articleId = nanoid();
 
+      let articleSlug = input.slug;
+      let slugExists = await db.select({ id: articles.id }).from(articles).where(eq(articles.slug, articleSlug));
+      let counter = 1;
+      while (slugExists.length > 0) {
+        articleSlug = `${input.slug}-${nanoid(4)}`; // إضافة جزء عشوائي قصير
+        slugExists = await db.select({ id: articles.id }).from(articles).where(eq(articles.slug, articleSlug));
+        counter++;
+        if (counter > 10) throw new Error('فشل في توليد slug فريد بعد عدة محاولات'); // منع حلقة لا نهائية
+      }
+
       const newArticle = await db.insert(articles).values({
         id: articleId,
         title: input.title,
         subtitle: input.subtitle ?? null,
-        slug: input.slug,
+        slug: articleSlug,
         content: input.content,
         excerpt: input.excerpt ?? null,
         authorId: ctx.user.id,
@@ -146,6 +158,7 @@ export const articlesRouter = router({
         revisionNumber: 1,
         title: input.title,
         subtitle: input.subtitle ?? null,
+        slug: articleSlug,
         content: input.content,
         excerpt: input.excerpt ?? null,
         editedBy: ctx.user.id,

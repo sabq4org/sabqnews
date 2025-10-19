@@ -8,6 +8,13 @@
       "when": 1760863711729,
       "tag": "0000_superb_mauler",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1760864571842,
+      "tag": "0001_material_raider",
+      "breakpoints": true
     }
   ]
 }

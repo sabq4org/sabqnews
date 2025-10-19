@@ -20,7 +20,7 @@ import {
 // ============================================
 // Enums
 // ============================================
-export const userRoleEnum = pgEnum("user_role", ["user", "editor", "admin"]);
+export const userRoleEnum = pgEnum("user_role", ["user", "writer", "editor", "admin"]);
 export const articleStatusEnum = pgEnum("article_status", ["draft", "published", "archived"]);
 export const commentStatusEnum = pgEnum("comment_status", ["pending", "approved", "rejected"]);
 export const notificationTypeEnum = pgEnum("notification_type", ["info", "warning", "success", "error"]);
@@ -34,6 +34,7 @@ export const users = pgTable(
     id: varchar("id", { length: 64 }).primaryKey(),
     name: text("name"),
     email: varchar("email", { length: 320 }),
+    password: varchar("password", { length: 255 }),
     loginMethod: varchar("login_method", { length: 64 }),
     role: userRoleEnum("role").default("user").notNull(),
     avatarUrl: varchar("avatar_url", { length: 500 }),

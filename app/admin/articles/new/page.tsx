@@ -78,32 +78,53 @@ export default function NewArticlePage() {
       .trim();
   };
 
-  const handleSubmit = async (status: 'draft' | 'review') => {
+  const handleSubmit = async (status: 'draft' | 'review' | 'published') => {
     if (!title || !content || !categoryId) {
       alert('الرجاء ملء جميع الحقول المطلوبة');
       return;
     }
 
-    // TODO: Upload image to storage service (Cloudinary, S3, etc.)
-    // For now, we'll use the preview or existing URL
-    const finalImage = imagePreview || featuredImage;
+    try {
+      let finalImage = featuredImage;
 
-    const slug = generateSlug(title);
+      // رفع الصورة إلى Vercel Blob إذا كان هناك ملف جديد
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
 
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
 
-    createArticle.mutate({
-      title,
-      slug,
-      content,
-      excerpt: excerpt || undefined,
-      categoryId,
-      featuredImage: finalImage || undefined,
-      seoTitle: seoTitle || undefined,
-      seoDescription: seoDescription || undefined,
-      status,
-      subtitle: subtitle || undefined,
-      tags: keywords.length > 0 ? keywords : undefined,
-    });
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.error || 'فشل رفع الصورة');
+        }
+
+        const uploadData = await uploadResponse.json();
+        finalImage = uploadData.url;
+      }
+
+      const slug = generateSlug(title);
+
+      createArticle.mutate({
+        title,
+        slug,
+        content,
+        excerpt: excerpt || undefined,
+        categoryId,
+        featuredImage: finalImage || undefined,
+        seoTitle: seoTitle || undefined,
+        seoDescription: seoDescription || undefined,
+        status,
+        subtitle: subtitle || undefined,
+        tags: keywords.length > 0 ? keywords : undefined,
+      });
+    } catch (error: any) {
+      alert('حدث خطأ: ' + error.message);
+      console.error('Error submitting article:', error);
+    }
   };
 
   return (
@@ -346,12 +367,12 @@ export default function NewArticlePage() {
             {/* Actions */}
             <div className="bg-white rounded-lg shadow-sm p-6 space-y-3">
               <button
-                onClick={() => handleSubmit('draft')}
+                onClick={() => handleSubmit('published')}
                 disabled={createArticle.isPending}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
               >
-                <Save className="w-5 h-5" />
-                حفظ كمسودة
+                <Eye className="w-5 h-5" />
+                نشر الآن
               </button>
               <button
                 onClick={() => handleSubmit('review')}
@@ -360,6 +381,14 @@ export default function NewArticlePage() {
               >
                 <Send className="w-5 h-5" />
                 إرسال للمراجعة
+              </button>
+              <button
+                onClick={() => handleSubmit('draft')}
+                disabled={createArticle.isPending}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
+              >
+                <Save className="w-5 h-5" />
+                حفظ كمسودة
               </button>
             </div>
           </div>

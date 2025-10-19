@@ -30,7 +30,7 @@ export const articlesRouter = router({
         search: z.string().optional(),
         status: z.enum(articleStatusEnum.enumValues).optional(),
         authorId: z.string().optional(),
-        categoryId: z.string(),
+        categoryId: z.string().optional(),
         limit: z.number().min(1).max(100).default(10),
         offset: z.number().min(0).default(0),
       })
@@ -111,6 +111,7 @@ export const articlesRouter = router({
         audioUrl: z.string().optional(),
         sourceUrl: z.string().optional(),
         sourceName: z.string().optional(),
+        status: z.enum(articleStatusEnum.enumValues).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -149,7 +150,8 @@ export const articlesRouter = router({
         audioUrl: input.audioUrl ?? null,
         sourceUrl: input.sourceUrl ?? null,
         sourceName: input.sourceName ?? null,
-        status: 'draft',
+        status: input.status ?? 'draft',
+        publishedAt: input.status === 'published' ? new Date() : null,
         currentRevision: 1,
         lastEditedBy: ctx.user.id,
       }).returning();

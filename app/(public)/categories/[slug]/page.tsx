@@ -68,8 +68,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
 
       {/* Category Header */}
-      <div className="relative text-white py-12 overflow-hidden bg-gradient-to-br from-gray-900 to-gray-700">
-        <div className="relative h-72 md:h-96 flex items-center justify-center">
+      {/* Remove py-12 to connect directly to header */}
+      <div className="relative text-white overflow-hidden bg-gradient-to-br from-gray-900 to-gray-700">
+        {/* Adjust height and remove padding/margin from top */}
+        <div className="relative h-72 md:h-96 flex items-center justify-center pt-12 md:pt-16">
           {category.heroImage && (
             <Image
               src={category.heroImage}
@@ -78,7 +80,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-300"
             />
           )}
-          <div className="relative z-10 text-center text-white p-4 bg-black bg-opacity-50 rounded-lg shadow-lg">
+          <div className="relative z-10 text-center text-white p-4 bg-black bg-opacity-60 rounded-lg shadow-lg mx-4">
             <h1 className="text-4xl md:text-6xl font-extrabold mb-2 drop-shadow-lg" dir="rtl">
               {category.name}
             </h1>

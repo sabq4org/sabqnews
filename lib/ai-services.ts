@@ -357,3 +357,82 @@ ${content}
   }
 }
 
+
+"""
+/**
+ * توليد توصيات مقالات ذات صلة باستخدام الذكاء الاصطناعي
+ */
+export async function generateRecommendations(
+  articleContent: string,
+  articleTitle: string,
+  articleCategory: string,
+  articleKeywords: string[]
+): Promise<{ title: string; slug: string }[]> {
+  try {
+    const prompt = `أنت محرك توصيات ذكي متخصص في اقتراح مقالات إخبارية باللغة العربية.
+بناءً على المقال الحالي، قم باقتراح 3 مقالات أخرى ذات صلة وثيقة.
+
+المقال الحالي:
+العنوان: ${articleTitle}
+الفئة: ${articleCategory}
+الكلمات المفتاحية: ${articleKeywords.join(', ')}
+المحتوى: ${articleContent}
+
+قدم 3 توصيات لمقالات ذات صلة. لكل توصية، قم بتضمين العنوان (title) والمفتاح الفريد (slug) الخاص بها. يجب أن تكون عناوين المقالات المقترحة جذابة وواقعية، وأن تتناسب مع سياق المقال الحالي وفئته.
+
+📘 تنسيق الإخراج المطلوب (JSON فقط):
+[
+  {
+    "title": "عنوان المقال الموصى به الأول",
+    "slug": "slug-المقال-الأول"
+  },
+  {
+    "title": "عنوان المقال الموصى به الثاني",
+    "slug": "slug-المقال-الثاني"
+  },
+  {
+    "title": "عنوان المقال الموصى به الثالث",
+    "slug": "slug-المقال-الثالث"
+  }
+]
+
+✳️ تذكير:
+- لا تُضف أي مقدمات أو شروحات خارج JSON.
+- حافظ على الواقعية في العناوين المقترحة.
+- تأكد من أن الـ slug يعكس العنوان بشكل صحيح (يمكن أن يكون مجرد ترجمة URL للعناوين).
+`;
+
+    const response = await invokeLLM({
+      messages: [
+        {
+          role: "system",
+          content: "أنت محرك توصيات ذكي. قم بتوليد توصيات مقالات بصيغة JSON فقط بدون أي نص إضافي.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      temperature: 0.7,
+      response_format: { type: "json_object" },
+    });
+
+    const responseContent = response.choices[0]?.message?.content;
+    if (!responseContent) {
+      throw new Error("لم يتم الحصول على استجابة لتوصيات المقالات");
+    }
+
+    const parsed = JSON.parse(responseContent);
+    // Validate that parsed is an array of objects with title and slug
+    if (Array.isArray(parsed) && parsed.every(item => typeof item.title === 'string' && typeof item.slug === 'string')) {
+      return parsed;
+    } else {
+      console.error("Invalid JSON format for recommendations:", responseContent);
+      return [];
+    }
+  } catch (error) {
+    console.error("Error generating recommendations:", error);
+    return [];
+  }
+}
+

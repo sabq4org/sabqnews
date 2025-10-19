@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { router, publicProcedure, protectedProcedure } from '../trpc';
 import { getDb } from '@/lib/db';
 import { users } from '@/drizzle/schema';
-import { eq, desc, like, or } from 'drizzle-orm';
+import { eq, desc, like, or, and, count } from 'drizzle-orm';
 import { hashPassword } from '@/lib/auth';
 import { nanoid } from 'nanoid';
 
@@ -54,14 +54,17 @@ export const usersRouter = router({
         .offset(input.offset);
 
       // عد إجمالي المستخدمين
-      const totalUsers = await db.select().from(users);
+      const totalUsers = await db
+        .select({ count: count() })
+        .from(users)
+        .where(conditions.length > 0 ? and(...conditions) : undefined);
 
       return {
         users: allUsers.map((u: any) => ({
           ...u,
           password: undefined, // إخفاء كلمة المرور
         })),
-        total: totalUsers.length,
+        total: totalUsers[0].count,
       };
     }),
 

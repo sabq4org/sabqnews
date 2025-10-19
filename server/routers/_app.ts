@@ -7,6 +7,23 @@ import { desc, eq } from "drizzle-orm";
 export const appRouter = router({
   // Articles
   articles: router({
+    stats: publicProcedure.query(async () => {
+      const db = await getDb();
+      if (!db) return { totalArticles: 0, publishedArticles: 0, draftArticles: 0, totalViews: 0 };
+      
+      const allArticles = await db.select().from(articles);
+      const published = allArticles.filter(a => a.status === 'published');
+      const drafts = allArticles.filter(a => a.status === 'draft');
+      const totalViews = allArticles.reduce((sum, a) => sum + (a.views || 0), 0);
+      
+      return {
+        totalArticles: allArticles.length,
+        publishedArticles: published.length,
+        draftArticles: drafts.length,
+        totalViews
+      };
+    }),
+    
     list: publicProcedure
       .input(
         z.object({

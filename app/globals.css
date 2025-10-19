@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* لوحة الألوان الأساسية للتصميم الجديد */
 :root {
@@ -48,130 +50,77 @@
   --color-error: #ef4444;
   --color-info: #3b82f6;
   
-  /* الخلفيات */
+  /* ألوان الخلفية والنصوص */
   --background: #ffffff;
-  --background-secondary: #f8f8f7;
-  --background-tertiary: #f0f0ef;
-  --foreground: #171717;
-  --foreground-secondary: #6b7280;
+  --foreground: #000000;
   
-  /* الحدود */
+  /* ألوان الحدود والخطوط */
   --border-color: #e5e7eb;
-  --border-color-light: #f3f4f6;
+  --border-color-dark: #d1d5db;
 }
 
+/* الوضع الداكن */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f0f0f;
-    --background-secondary: #1a1a1a;
-    --background-tertiary: #252525;
-    --foreground: #f5f5f5;
-    --foreground-secondary: #a0a0a0;
-    --border-color: #333333;
+    --background: #0f172a;
+    --foreground: #f8fafc;
+    --border-color: #334155;
     --border-color-light: #1f1f1f;
   }
 }
-
-
 
 /* الأنماط الأساسية */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-ibm-plex-arabic), 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
-  direction: rtl;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* الأنماط المخصصة للمكونات */
+@layer components {
+  .card {
+    @apply bg-white dark:bg-slate-900 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg;
+  }
 
-/* البطاقات */
-.card {
-  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-md;
-}
+  .btn-primary {
+    @apply px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium;
+  }
 
-.card-elevated {
-  @apply bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700;
-}
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200 font-medium;
+  }
 
-/* الأزرار */
-.btn {
-  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
-}
+  .badge-ai {
+    @apply inline-flex items-center gap-1 px-3 py-1 bg-ai-100 dark:bg-ai-900 text-ai-700 dark:text-ai-300 rounded-full text-sm font-medium;
+  }
 
-.btn-primary {
-  @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
-}
+  .badge-breaking {
+    @apply inline-flex items-center gap-1 px-3 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-full text-sm font-medium animate-pulse;
+  }
 
-.btn-secondary {
-  @apply bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 focus:ring-gray-500;
-}
+  .badge-featured {
+    @apply inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded-full text-sm font-medium;
+  }
 
-.btn-ai {
-  @apply bg-ai-500 text-white hover:bg-ai-600 focus:ring-ai-500;
-}
+  .section-title {
+    @apply text-3xl font-bold text-gray-900 dark:text-white mb-6;
+  }
 
-/* الأيقونات */
-.icon-ai {
-  @apply inline-flex items-center justify-center w-5 h-5 rounded-full bg-ai-100 dark:bg-ai-900 text-ai-600 dark:text-ai-400;
-}
+  .article-title {
+    @apply text-2xl md:text-4xl font-bold text-gray-900 dark:text-white leading-tight;
+  }
 
-/* الجداول */
-.table-container {
-  @apply overflow-x-auto;
-}
+  .article-excerpt {
+    @apply text-lg text-gray-600 dark:text-gray-300 leading-relaxed;
+  }
 
-.table {
-  @apply w-full border-collapse;
-}
-
-.table thead {
-  @apply bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700;
-}
-
-.table th {
-  @apply px-4 py-3 text-right font-semibold text-gray-700 dark:text-gray-300 text-sm;
-}
-
-.table tbody tr {
-  @apply border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors;
-}
-
-.table tbody tr:nth-child(even) {
-  @apply bg-gray-50 dark:bg-gray-900;
-}
-
-.table td {
-  @apply px-4 py-3 text-sm text-gray-700 dark:text-gray-300;
-}
-
-/* النصوص */
-h1 {
-  @apply text-3xl font-bold text-gray-900 dark:text-white;
-}
-
-h2 {
-  @apply text-2xl font-bold text-gray-900 dark:text-white;
-}
-
-h3 {
-  @apply text-xl font-semibold text-gray-900 dark:text-white;
-}
-
-p {
-  @apply text-gray-700 dark:text-gray-300 leading-relaxed;
-}
-
-/* الروابط */
-a {
-  @apply text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors;
-}
-
-/* الإدخالات */
-input,
-textarea,
-select {
-  @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+  .text-muted {
+    @apply text-gray-500 dark:text-gray-400;
+  }
 }
 
 /* الرسوم المتحركة */
@@ -195,11 +144,69 @@ select {
   }
 }
 
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in-out;
 }
 
 .animate-slide-in-up {
   animation: slideInUp 0.3s ease-in-out;
+}
+
+.animate-slide-in-down {
+  animation: slideInDown 0.3s ease-in-out;
+}
+
+/* الأنماط المتقدمة */
+.glass-effect {
+  @apply backdrop-blur-md bg-white/30 dark:bg-slate-900/30 border border-white/20 dark:border-slate-700/20;
+}
+
+.gradient-primary {
+  @apply bg-gradient-to-r from-primary-500 to-primary-600;
+}
+
+.gradient-ai {
+  @apply bg-gradient-to-r from-ai-500 to-ai-600;
+}
+
+.shadow-lg-custom {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* الأنماط المتجاوبة */
+@media (max-width: 768px) {
+  .section-title {
+    @apply text-2xl;
+  }
+
+  .article-title {
+    @apply text-xl;
+  }
+
+  .article-excerpt {
+    @apply text-base;
+  }
+}
+
+/* الأنماط الخاصة بـ RTL */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
 }
 

@@ -19,6 +19,8 @@ interface ArticlePageProps {
 }
 
 async function getArticle(slug: string) {
+  const decodedSlug = decodeURIComponent(slug);
+
   const db = getDb();
   
   const result = await db
@@ -30,7 +32,7 @@ async function getArticle(slug: string) {
     .from(articles)
     .leftJoin(categories, eq(articles.categoryId, categories.id))
     .leftJoin(users, eq(articles.authorId, users.id))
-    .where(eq(articles.slug, slug))
+    .where(eq(articles.slug, decodedSlug))
     .limit(1);
 
   if (!result || result.length === 0) {

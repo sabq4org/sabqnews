@@ -17,7 +17,7 @@ export const categoriesRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const db = await getDb();
+      const db = getDb();
       if (!db) throw new Error('Database connection failed');
 
       let query = db.select().from(categories);
@@ -61,7 +61,7 @@ export const categoriesRouter = router({
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const db = await getDb();
+      const db = getDb();
       if (!db) throw new Error('Database connection failed');
 
       const [category] = await db
@@ -98,7 +98,7 @@ export const categoriesRouter = router({
         throw new Error('غير مصرح - يجب أن تكون مديراً أو محرراً');
       }
 
-      const db = await getDb();
+      const db = getDb();
       if (!db) throw new Error('Database connection failed');
 
       // التحقق من عدم وجود slug مكرر
@@ -161,7 +161,7 @@ export const categoriesRouter = router({
         throw new Error('غير مصرح - يجب أن تكون مديراً أو محرراً');
       }
 
-      const db = await getDb();
+      const db = getDb();
       if (!db) throw new Error('Database connection failed');
 
       // التحقق من وجود التصنيف
@@ -218,7 +218,7 @@ export const categoriesRouter = router({
         throw new Error('غير مصرح - يجب أن تكون مديراً');
       }
 
-      const db = await getDb();
+      const db = getDb();
       if (!db) throw new Error('Database connection failed');
 
       // التحقق من وجود التصنيف
@@ -243,7 +243,7 @@ export const categoriesRouter = router({
 
   // إحصائيات التصنيفات
   stats: publicProcedure.query(async () => {
-    const db = await getDb();
+    const db = getDb();
     if (!db) throw new Error('Database connection failed');
 
     const allCategories = await db.select().from(categories);

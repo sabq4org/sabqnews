@@ -19,7 +19,7 @@ export const usersRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const db = await getDb();
+      const db = getDb();
       if (!db) throw new Error('Database connection failed');
 
       let query = db.select().from(users);
@@ -69,7 +69,7 @@ export const usersRouter = router({
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const db = await getDb();
+      const db = getDb();
       if (!db) throw new Error('Database connection failed');
 
       const [user] = await db
@@ -106,7 +106,7 @@ export const usersRouter = router({
         throw new Error('غير مصرح - يجب أن تكون مديراً');
       }
 
-      const db = await getDb();
+      const db = getDb();
       if (!db) throw new Error('Database connection failed');
 
       // التحقق من عدم وجود بريد إلكتروني مكرر
@@ -168,7 +168,7 @@ export const usersRouter = router({
         throw new Error('غير مصرح - يمكنك تعديل حسابك فقط');
       }
 
-      const db = await getDb();
+      const db = getDb();
       if (!db) throw new Error('Database connection failed');
 
       // التحقق من وجود المستخدم
@@ -215,7 +215,7 @@ export const usersRouter = router({
         throw new Error('غير مصرح');
       }
 
-      const db = await getDb();
+      const db = getDb();
       if (!db) throw new Error('Database connection failed');
 
       const hashedPassword = await hashPassword(input.newPassword);
@@ -245,7 +245,7 @@ export const usersRouter = router({
         throw new Error('لا يمكنك حذف حسابك الخاص');
       }
 
-      const db = await getDb();
+      const db = getDb();
       if (!db) throw new Error('Database connection failed');
 
       await db.delete(users).where(eq(users.id, input.id));
@@ -258,7 +258,7 @@ export const usersRouter = router({
 
   // إحصائيات المستخدمين
   stats: protectedProcedure.query(async () => {
-    const db = await getDb();
+    const db = getDb();
     if (!db) throw new Error('Database connection failed');
 
     const allUsers = await db.select().from(users);

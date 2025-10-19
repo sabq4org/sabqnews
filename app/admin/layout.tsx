@@ -14,7 +14,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { data: user, isLoading: isUserLoading } = trpc.auth.me.useQuery();
+  const { data: user, isLoading: isUserLoading } = trpc.auth.me.useQuery(undefined, {
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    refetchOnWindowFocus: false,
+  });
 
   // Get page title based on pathname
   const getPageTitle = () => {

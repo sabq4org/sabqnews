@@ -1,4 +1,6 @@
 import { getDb } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
 import { articles, categories } from '@/drizzle/schema';
 import { desc, eq } from 'drizzle-orm';
 import { Calendar, Eye, TrendingUp, Search } from 'lucide-react';

@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 import { getDb } from '@/lib/db';
 import { articles, categories, users } from '@/drizzle/schema';
 import { eq } from 'drizzle-orm';

@@ -37,7 +37,7 @@ export async function GET() {
         isActive: adminUser.isActive
       } : null,
       totalUsers: allUsers.length,
-      allUserEmails: allUsers.map(u => u.email)
+      allUserEmails: allUsers.map((u: any) => u.email)
     });
 
   } catch (error: any) {

@@ -7,6 +7,7 @@ import { desc, eq } from "drizzle-orm";
 import { usersRouter } from "./users";
 import { authRouter } from "./auth";
 import { categoriesRouter } from "./categories";
+import { aiRouter } from "./ai";
 
 export const appRouter = router({
   // Articles
@@ -20,6 +21,9 @@ export const appRouter = router({
 
   // Auth
   auth: authRouter,
+
+  // AI Services
+  ai: aiRouter,
 });
 
 export type AppRouter = typeof appRouter;

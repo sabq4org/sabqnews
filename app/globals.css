@@ -1,7 +1,7 @@
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+html, body { @apply bg-white text-gray-900; }
 
 /* لوحة الألوان الأساسية للتصميم الجديد */
 :root {

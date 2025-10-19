@@ -92,6 +92,7 @@ export const articlesRouter = router({
     .input(
       z.object({
         title: z.string().min(1).max(500),
+        subtitle: z.string().optional(),
         slug: z.string().min(1).max(500),
         content: z.any(),
         excerpt: z.string().optional(),
@@ -118,6 +119,7 @@ export const articlesRouter = router({
       const newArticle = await db.insert(articles).values({
         id: articleId,
         title: input.title,
+        subtitle: input.subtitle ?? null,
         slug: input.slug,
         content: input.content,
         excerpt: input.excerpt ?? null,
@@ -143,6 +145,7 @@ export const articlesRouter = router({
         articleId: articleId,
         revisionNumber: 1,
         title: input.title,
+        subtitle: input.subtitle ?? null,
         content: input.content,
         excerpt: input.excerpt ?? null,
         editedBy: ctx.user.id,
@@ -157,6 +160,7 @@ export const articlesRouter = router({
       z.object({
         id: z.string(),
         title: z.string().min(1).max(500).optional(),
+        subtitle: z.string().optional(),
         slug: z.string().min(1).max(500).optional(),
         content: z.any().optional(),
         excerpt: z.string().optional(),

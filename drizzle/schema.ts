@@ -89,6 +89,7 @@ export const articles = pgTable(
   {
     id: varchar("id", { length: 64 }).primaryKey(),
     title: varchar("title", { length: 500 }).notNull(),
+    subtitle: varchar("subtitle", { length: 500 }),
     slug: varchar("slug", { length: 500 }).notNull().unique(),
     content: json("content").$type<any>().notNull(), // Blocks Editor content
     excerpt: text("excerpt"),
@@ -299,6 +300,7 @@ export const articleRevisions = pgTable(
     articleId: varchar("article_id", { length: 64 }).notNull(),
     revisionNumber: integer("revision_number").notNull(),
     title: varchar("title", { length: 500 }).notNull(),
+    subtitle: varchar("subtitle", { length: 500 }),
     content: json("content").$type<any>().notNull(),
     excerpt: text("excerpt"),
     changes: json("changes").$type<any>(), // Diff من النسخة السابقة

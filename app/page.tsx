@@ -10,7 +10,8 @@ export default function Home() {
     offset: 0,
   });
 
-  const { data: categories, isLoading: categoriesLoading } = trpc.categories.list.useQuery();
+  const { data: categoriesData, isLoading: categoriesLoading } = trpc.categories.list.useQuery({});
+  const categories = categoriesData?.categories || [];
 
   if (articlesLoading || categoriesLoading) {
     return (

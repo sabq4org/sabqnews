@@ -16,8 +16,7 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
-    // تعطيل Static Page Generation لتجاوز خطأ <Html> أثناء البناء
-    staticPageGeneration: false,
+
   },
 };
 

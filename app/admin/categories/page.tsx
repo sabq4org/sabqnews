@@ -96,12 +96,31 @@ export default function CategoriesManagement() {
     }
   };
 
+
   const uploadHeroImage = async (): Promise<string> => {
     if (!heroImageFile) return formData.heroImage;
 
-    // TODO: Implement Cloudinary upload
-    // For now, return a placeholder
-    return "https://via.placeholder.com/800x400";
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", heroImageFile);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadFormData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Upload failed");
+      }
+
+      const data = await response.json();
+      return data.url;
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      alert("فشل رفع الصورة: " + error.message);
+      return formData.heroImage;
+    }
   };
 
   const handleCreateCategory = async () => {

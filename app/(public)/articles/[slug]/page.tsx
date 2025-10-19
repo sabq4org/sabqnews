@@ -1,4 +1,6 @@
+import Image from 'next/image';
 import { getDb } from '@/lib/db';
+import { generateSummary } from '@/lib/ai-services';
 
 export const dynamic = 'force-dynamic';
 import { articles, categories, users } from '@/drizzle/schema';
@@ -71,6 +73,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   const { article, category, author } = data;
   const relatedArticles = await getRelatedArticles(article.id, article.categoryId);
+  const summary = await generateSummary(article.content as string);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -115,15 +118,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
 
         {/* AI Summary */}
-        <AISummary summary={article.excerpt || ''} />
+        <AISummary summary={summary} />
 
         {/* Featured Image */}
         {article.featuredImage && (
           <div className="my-8 rounded-lg overflow-hidden shadow-lg">
-            <img
+            <Image
               src={article.featuredImage}
               alt={article.title}
-              className="w-full h-auto"
+              width={1200} // Set appropriate width
+              height={675} // Set appropriate height (e.g., 16:9 aspect ratio)
+              className="w-full h-auto object-cover"
+              priority // Load featured image with high priority
             />
           </div>
         )}

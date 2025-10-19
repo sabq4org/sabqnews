@@ -3,8 +3,9 @@ import { notFound } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 import { getDb } from '@/lib/db';
 import { articles, categories } from '@/drizzle/schema';
-import { eq, desc } from 'drizzle-orm';
-import { Calendar, Eye } from 'lucide-react';
+import { eq, desc, count, sql } from 'drizzle-orm';
+import { Calendar, Eye, FileText } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 
@@ -38,8 +39,16 @@ async function getCategoryWithArticles(slug: string) {
     .orderBy(desc(articles.publishedAt))
     .limit(20);
 
+  // Calculate total views for the category
+  const totalViewsResult = await db
+    .select({ totalViews: sql<number>`sum(${articles.views})` })
+    .from(articles)
+    .where(eq(articles.categoryId, category.id));
+
+  const totalViews = totalViewsResult[0]?.totalViews || 0;
+
   return {
-    category,
+    category: { ...category, totalViews }, // Add totalViews to category object
     articles: categoryArticles,
   };
 }
@@ -59,15 +68,29 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
       {/* Category Header */}
       <div className="bg-gradient-to-l from-blue-600 to-blue-800 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-2" dir="rtl">
-            {category.name}
-          </h1>
-          {category.description && (
-            <p className="text-xl text-blue-100" dir="rtl">
-              {category.description}
-            </p>
+        <div className="relative h-64 bg-gray-800 flex items-center justify-center overflow-hidden">
+          {category.heroImage && (
+            <Image
+              src={category.heroImage}
+              alt={category.name}
+              fill
+              className="object-cover opacity-50"
+            />
           )}
+          <div className="relative z-10 text-center text-white p-4">
+            <h1 className="text-5xl font-extrabold mb-2 drop-shadow-lg" dir="rtl">
+              {category.name}
+            </h1>
+            <div className="flex items-center justify-center gap-4 text-lg text-blue-100">
+              <span dir="rtl">{categoryArticles.length} مقال</span>
+              <span dir="rtl">• {category.totalViews || 0} مشاهدة</span>
+            </div>
+            {category.description && (
+              <p className="text-xl text-blue-100 mt-2 max-w-2xl mx-auto" dir="rtl">
+                {category.description}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

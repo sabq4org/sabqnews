@@ -265,13 +265,13 @@ export const usersRouter = router({
 
     const stats = {
       total: allUsers.length,
-      active: allUsers.filter(u => u.isActive).length,
-      inactive: allUsers.filter(u => !u.isActive).length,
+      active: allUsers.filter((u: any) => u.isActive).length,
+      inactive: allUsers.filter((u: any) => !u.isActive).length,
       byRole: {
-        admin: allUsers.filter(u => u.role === 'admin').length,
-        editor: allUsers.filter(u => u.role === 'editor').length,
-        writer: allUsers.filter(u => u.role === 'writer').length,
-        user: allUsers.filter(u => u.role === 'user').length,
+        admin: allUsers.filter((u: any) => u.role === 'admin').length,
+        editor: allUsers.filter((u: any) => u.role === 'editor').length,
+        writer: allUsers.filter((u: any) => u.role === 'writer').length,
+        user: allUsers.filter((u: any) => u.role === 'user').length,
       },
     };
 

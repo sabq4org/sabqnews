@@ -75,7 +75,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 src={category.heroImage}
                 alt={category.name}
                 fill
-                className="absolute inset-0 w-full h-full object-cover object-center opacity-40 transition-opacity duration-300"
+                className="absolute inset-0 w-full h-full object-contain object-center opacity-40 transition-opacity duration-300"
                 unoptimized // Added unoptimized to bypass Next.js Image optimization for external URLs
               />
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
@@ -92,9 +92,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               </p>
             )}
             {/* Transparent label for stats */}
-            <div className="inline-flex items-center justify-center gap-4 text-base md:text-xl text-gray-200 mt-4 px-4 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
-              <span dir="rtl" className="flex items-center"><FileText className="inline-block w-5 h-5 ml-1" /> {categoryArticles.length} مقال</span>
-              <span dir="rtl" className="flex items-center"><Eye className="inline-block w-5 h-5 ml-1" /> {category.totalViews || 0} مشاهدة</span>
+            {/* Transparent labels for stats */}
+            <div className="flex items-center justify-center gap-4 mt-4">
+              <span dir="rtl" className="flex items-center text-base md:text-xl text-gray-200 px-4 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
+                <FileText className="inline-block w-5 h-5 ml-2" /> {categoryArticles.length} مقال
+              </span>
+              <span dir="rtl" className="flex items-center text-base md:text-xl text-gray-200 px-4 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
+                <Eye className="inline-block w-5 h-5 ml-2" /> {category.totalViews || 0} مشاهدة
+              </span>
             </div>
           </div>
         </div>

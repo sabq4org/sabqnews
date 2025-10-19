@@ -2,6 +2,7 @@
 
 import { trpc } from "../lib/trpc";
 import Link from "next/link";
+import type { Category } from "../drizzle/schema";
 
 export default function Home() {
   const { data: articles, isLoading } = trpc.articles.list.useQuery({
@@ -40,7 +41,7 @@ export default function Home() {
                   الرئيسية
                 </Link>
               </li>
-              {categories?.map((category) => (
+              {categories?.map((category: Category) => (
                 <li key={category.id}>
                   <Link
                     href={`/category/${category.slug}`}

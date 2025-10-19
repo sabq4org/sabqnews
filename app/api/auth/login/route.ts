@@ -16,15 +16,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const db = await getDb();
-    if (!db) {
-      console.error('[Login] Database connection failed');
-      return NextResponse.json(
-        { error: 'خطأ في الاتصال بقاعدة البيانات' },
-        { status: 500 }
-      );
-    }
-
+    const db = getDb();
     console.log('[Login] Searching for user:', email);
 
     // البحث عن المستخدم

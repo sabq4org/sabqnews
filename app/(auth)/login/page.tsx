@@ -17,13 +17,19 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -36,8 +42,12 @@ export default function LoginPage() {
       // نجح تسجيل الدخول
       router.push("/admin");
       router.refresh();
-    } catch (err) {
-      setError("حدث خطأ في الاتصال");
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        setError("انتهى وقت الاتصال - يرجى المحاولة مرة أخرى");
+      } else {
+        setError("حدث خطأ في الاتصال");
+      }
       setIsLoading(false);
     }
   };

@@ -1,6 +1,6 @@
 import { router, publicProcedure } from "../trpc";
 import { z } from "zod";
-import { db } from "../../lib/db";
+import { getDb } from "../../lib/db";
 import { articles, categories } from "../../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 
@@ -15,6 +15,7 @@ export const appRouter = router({
         })
       )
       .query(async ({ input }) => {
+        const db = await getDb();
         return await db
           .select()
           .from(articles)
@@ -27,6 +28,7 @@ export const appRouter = router({
     getBySlug: publicProcedure
       .input(z.object({ slug: z.string() }))
       .query(async ({ input }) => {
+        const db = await getDb();
         const result = await db
           .select()
           .from(articles)
@@ -39,6 +41,7 @@ export const appRouter = router({
   // Categories
   categories: router({
     list: publicProcedure.query(async () => {
+      const db = await getDb();
       return await db
         .select()
         .from(categories)

@@ -47,25 +47,31 @@ export default function CategoriesManagement() {
 
   const createCategory = trpc.categories.create.useMutation({
     onSuccess: () => {
-      refetch();
-      setShowCreateModal(false);
-      resetForm();
+      setTimeout(() => {
+        refetch();
+        setShowCreateModal(false);
+        resetForm();
+      }, 0);
     },
   });
 
   const updateCategory = trpc.categories.update.useMutation({
     onSuccess: () => {
-      refetch();
-      setShowEditModal(false);
-      resetForm();
+      setTimeout(() => {
+        refetch();
+        setShowEditModal(false);
+        resetForm();
+      }, 0);
     },
   });
 
   const deleteCategory = trpc.categories.delete.useMutation({
     onSuccess: () => {
-      refetch();
-      setShowDeleteModal(false);
-      setSelectedCategory(null);
+      setTimeout(() => {
+        refetch();
+        setShowDeleteModal(false);
+        setSelectedCategory(null);
+      }, 0);
     },
   });
 

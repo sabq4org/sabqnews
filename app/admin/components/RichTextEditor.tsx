@@ -17,20 +17,23 @@ import {
   List,
   ListOrdered,
   Quote,
+  Code,
   Heading1,
   Heading2,
   Heading3,
-  AlignLeft,
-  AlignCenter,
   AlignRight,
-  Link as LinkIcon,
+  AlignCenter,
+  AlignLeft,
   Image as ImageIcon,
+  Link as LinkIcon,
   Youtube as YoutubeIcon,
   Undo,
   Redo,
-  Code,
+  Smile,
+  Palette,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
+import EmojiPicker from 'emoji-picker-react';
 
 interface RichTextEditorProps {
   content: string;
@@ -39,33 +42,21 @@ interface RichTextEditorProps {
 }
 
 export default function RichTextEditor({ content, onChange, placeholder }: RichTextEditorProps) {
-  const [showLinkInput, setShowLinkInput] = useState(false);
-  const [linkUrl, setLinkUrl] = useState('');
-  const [showImageInput, setShowImageInput] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
-  const [showYoutubeInput, setShowYoutubeInput] = useState(false);
-  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3],
-        },
-      }),
+      StarterKit,
       Placeholder.configure({
         placeholder: placeholder || 'ابدأ الكتابة...',
       }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
-        alignments: ['left', 'center', 'right'],
       }),
       Image,
       Link.configure({
         openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-blue-600 underline',
-        },
       }),
       Youtube.configure({
         width: 640,
@@ -76,339 +67,262 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
       Underline,
     ],
     content,
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none focus:outline-none min-h-[400px] p-4',
-        dir: 'rtl',
-      },
-    },
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[300px] p-4',
+        dir: 'rtl',
+      },
+    },
   });
-
-  const addLink = useCallback(() => {
-    if (linkUrl && editor) {
-      editor.chain().focus().setLink({ href: linkUrl }).run();
-      setLinkUrl('');
-      setShowLinkInput(false);
-    }
-  }, [editor, linkUrl]);
-
-  const addImage = useCallback(() => {
-    if (imageUrl && editor) {
-      editor.chain().focus().setImage({ src: imageUrl }).run();
-      setImageUrl('');
-      setShowImageInput(false);
-    }
-  }, [editor, imageUrl]);
-
-  const addYoutube = useCallback(() => {
-    if (youtubeUrl && editor) {
-      editor.commands.setYoutubeVideo({
-        src: youtubeUrl,
-      });
-      setYoutubeUrl('');
-      setShowYoutubeInput(false);
-    }
-  }, [editor, youtubeUrl]);
 
   if (!editor) {
     return null;
   }
 
+  const addImage = () => {
+    const url = window.prompt('أدخل رابط الصورة:');
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  };
+
+  const addLink = () => {
+    const url = window.prompt('أدخل الرابط:');
+    if (url) {
+      editor.chain().focus().setLink({ href: url }).run();
+    }
+  };
+
+  const addYoutube = () => {
+    const url = window.prompt('أدخل رابط فيديو YouTube:');
+    if (url) {
+      editor.chain().focus().setYoutubeVideo({ src: url }).run();
+    }
+  };
+
+  const setColor = (color: string) => {
+    editor.chain().focus().setColor(color).run();
+    setShowColorPicker(false);
+  };
+
+  const colors = [
+    '#000000', '#374151', '#6B7280', '#9CA3AF',
+    '#EF4444', '#F59E0B', '#10B981', '#3B82F6',
+    '#8B5CF6', '#EC4899', '#14B8A6', '#F97316',
+  ];
+
   return (
     <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
       {/* Toolbar */}
-      <div className="border-b border-gray-300 bg-gray-50 p-2 flex flex-wrap gap-1">
+      <div className="bg-gray-50 border-b border-gray-300 p-2 flex flex-wrap gap-1">
         {/* Text Formatting */}
-        <div className="flex gap-1 border-l border-gray-300 pl-1">
-          <button
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('bold') ? 'bg-gray-300' : ''
-            }`}
-            title="عريض"
-            type="button"
-          >
-            <Bold className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('italic') ? 'bg-gray-300' : ''
-            }`}
-            title="مائل"
-            type="button"
-          >
-            <Italic className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleUnderline().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('underline') ? 'bg-gray-300' : ''
-            }`}
-            title="تحته خط"
-            type="button"
-          >
-            <UnderlineIcon className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bold') ? 'bg-gray-300' : ''}`}
+          title="عريض"
+        >
+          <Bold className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('italic') ? 'bg-gray-300' : ''}`}
+          title="مائل"
+        >
+          <Italic className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('underline') ? 'bg-gray-300' : ''}`}
+          title="تحته خط"
+        >
+          <UnderlineIcon className="w-4 h-4" />
+        </button>
+
+        <div className="w-px bg-gray-300 mx-1" />
 
         {/* Headings */}
-        <div className="flex gap-1 border-l border-gray-300 pl-1">
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('heading', { level: 1 }) ? 'bg-gray-300' : ''
-            }`}
-            title="عنوان 1"
-            type="button"
-          >
-            <Heading1 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('heading', { level: 2 }) ? 'bg-gray-300' : ''
-            }`}
-            title="عنوان 2"
-            type="button"
-          >
-            <Heading2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('heading', { level: 3 }) ? 'bg-gray-300' : ''
-            }`}
-            title="عنوان 3"
-            type="button"
-          >
-            <Heading3 className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-300' : ''}`}
+          title="عنوان 1"
+        >
+          <Heading1 className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-300' : ''}`}
+          title="عنوان 2"
+        >
+          <Heading2 className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 3 }) ? 'bg-gray-300' : ''}`}
+          title="عنوان 3"
+        >
+          <Heading3 className="w-4 h-4" />
+        </button>
+
+        <div className="w-px bg-gray-300 mx-1" />
 
         {/* Lists */}
-        <div className="flex gap-1 border-l border-gray-300 pl-1">
-          <button
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('bulletList') ? 'bg-gray-300' : ''
-            }`}
-            title="قائمة نقطية"
-            type="button"
-          >
-            <List className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('orderedList') ? 'bg-gray-300' : ''
-            }`}
-            title="قائمة مرقمة"
-            type="button"
-          >
-            <ListOrdered className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bulletList') ? 'bg-gray-300' : ''}`}
+          title="قائمة نقطية"
+        >
+          <List className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('orderedList') ? 'bg-gray-300' : ''}`}
+          title="قائمة مرقمة"
+        >
+          <ListOrdered className="w-4 h-4" />
+        </button>
 
-        {/* Quote & Code */}
-        <div className="flex gap-1 border-l border-gray-300 pl-1">
-          <button
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('blockquote') ? 'bg-gray-300' : ''
-            }`}
-            title="اقتباس"
-            type="button"
-          >
-            <Quote className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('codeBlock') ? 'bg-gray-300' : ''
-            }`}
-            title="كود"
-            type="button"
-          >
-            <Code className="w-4 h-4" />
-          </button>
-        </div>
+        <div className="w-px bg-gray-300 mx-1" />
 
         {/* Alignment */}
-        <div className="flex gap-1 border-l border-gray-300 pl-1">
-          <button
-            onClick={() => editor.chain().focus().setTextAlign('right').run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive({ textAlign: 'right' }) ? 'bg-gray-300' : ''
-            }`}
-            title="محاذاة لليمين"
-            type="button"
-          >
-            <AlignRight className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().setTextAlign('center').run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive({ textAlign: 'center' }) ? 'bg-gray-300' : ''
-            }`}
-            title="محاذاة للوسط"
-            type="button"
-          >
-            <AlignCenter className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().setTextAlign('left').run()}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive({ textAlign: 'left' }) ? 'bg-gray-300' : ''
-            }`}
-            title="محاذاة لليسار"
-            type="button"
-          >
-            <AlignLeft className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-300' : ''}`}
+          title="محاذاة لليمين"
+        >
+          <AlignRight className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-300' : ''}`}
+          title="محاذاة للوسط"
+        >
+          <AlignCenter className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-300' : ''}`}
+          title="محاذاة لليسار"
+        >
+          <AlignLeft className="w-4 h-4" />
+        </button>
+
+        <div className="w-px bg-gray-300 mx-1" />
+
+        {/* Other */}
+        <button
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('blockquote') ? 'bg-gray-300' : ''}`}
+          title="اقتباس"
+        >
+          <Quote className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('codeBlock') ? 'bg-gray-300' : ''}`}
+          title="كود"
+        >
+          <Code className="w-4 h-4" />
+        </button>
+
+        <div className="w-px bg-gray-300 mx-1" />
 
         {/* Media */}
-        <div className="flex gap-1 border-l border-gray-300 pl-1">
+        <button
+          onClick={addImage}
+          className="p-2 rounded hover:bg-gray-200"
+          title="إضافة صورة"
+        >
+          <ImageIcon className="w-4 h-4" />
+        </button>
+        <button
+          onClick={addLink}
+          className="p-2 rounded hover:bg-gray-200"
+          title="إضافة رابط"
+        >
+          <LinkIcon className="w-4 h-4" />
+        </button>
+        <button
+          onClick={addYoutube}
+          className="p-2 rounded hover:bg-gray-200"
+          title="إضافة فيديو YouTube"
+        >
+          <YoutubeIcon className="w-4 h-4" />
+        </button>
+
+        <div className="w-px bg-gray-300 mx-1" />
+
+        {/* Emoji */}
+        <div className="relative">
           <button
-            onClick={() => setShowLinkInput(!showLinkInput)}
-            className={`p-2 rounded hover:bg-gray-200 ${
-              editor.isActive('link') ? 'bg-gray-300' : ''
-            }`}
-            title="رابط"
-            type="button"
-          >
-            <LinkIcon className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setShowImageInput(!showImageInput)}
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             className="p-2 rounded hover:bg-gray-200"
-            title="صورة"
-            type="button"
+            title="إضافة إيموجي"
           >
-            <ImageIcon className="w-4 h-4" />
+            <Smile className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => setShowYoutubeInput(!showYoutubeInput)}
-            className="p-2 rounded hover:bg-gray-200"
-            title="فيديو يوتيوب"
-            type="button"
-          >
-            <YoutubeIcon className="w-4 h-4" />
-          </button>
+          {showEmojiPicker && (
+            <div className="absolute top-full left-0 mt-1 z-50">
+              <EmojiPicker
+                onEmojiClick={(emojiData) => {
+                  editor.chain().focus().insertContent(emojiData.emoji).run();
+                  setShowEmojiPicker(false);
+                }}
+                searchPlaceholder="بحث..."
+                skinTonesDisabled
+              />
+            </div>
+          )}
         </div>
+
+        {/* Color Picker */}
+        <div className="relative">
+          <button
+            onClick={() => setShowColorPicker(!showColorPicker)}
+            className="p-2 rounded hover:bg-gray-200"
+            title="لون النص"
+          >
+            <Palette className="w-4 h-4" />
+          </button>
+          {showColorPicker && (
+            <div className="absolute top-full left-0 mt-1 z-50 bg-white border border-gray-300 rounded-lg p-2 shadow-lg">
+              <div className="grid grid-cols-4 gap-1">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setColor(color)}
+                    className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
+                    style={{ backgroundColor: color }}
+                    title={color}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="w-px bg-gray-300 mx-1" />
 
         {/* Undo/Redo */}
-        <div className="flex gap-1 border-l border-gray-300 pl-1">
-          <button
-            onClick={() => editor.chain().focus().undo().run()}
-            disabled={!editor.can().undo()}
-            className="p-2 rounded hover:bg-gray-200 disabled:opacity-50"
-            title="تراجع"
-            type="button"
-          >
-            <Undo className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().redo().run()}
-            disabled={!editor.can().redo()}
-            className="p-2 rounded hover:bg-gray-200 disabled:opacity-50"
-            title="إعادة"
-            type="button"
-          >
-            <Redo className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={() => editor.chain().focus().undo().run()}
+          className="p-2 rounded hover:bg-gray-200"
+          title="تراجع"
+        >
+          <Undo className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().redo().run()}
+          className="p-2 rounded hover:bg-gray-200"
+          title="إعادة"
+        >
+          <Redo className="w-4 h-4" />
+        </button>
       </div>
 
-      {/* Link Input */}
-      {showLinkInput && (
-        <div className="border-b border-gray-300 bg-gray-50 p-3 flex gap-2">
-          <input
-            type="url"
-            value={linkUrl}
-            onChange={(e) => setLinkUrl(e.target.value)}
-            placeholder="أدخل رابط URL"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded"
-            dir="ltr"
-          />
-          <button
-            onClick={addLink}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            type="button"
-          >
-            إضافة
-          </button>
-          <button
-            onClick={() => setShowLinkInput(false)}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-            type="button"
-          >
-            إلغاء
-          </button>
-        </div>
-      )}
-
-      {/* Image Input */}
-      {showImageInput && (
-        <div className="border-b border-gray-300 bg-gray-50 p-3 flex gap-2">
-          <input
-            type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="أدخل رابط الصورة"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded"
-            dir="ltr"
-          />
-          <button
-            onClick={addImage}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            type="button"
-          >
-            إضافة
-          </button>
-          <button
-            onClick={() => setShowImageInput(false)}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-            type="button"
-          >
-            إلغاء
-          </button>
-        </div>
-      )}
-
-      {/* Youtube Input */}
-      {showYoutubeInput && (
-        <div className="border-b border-gray-300 bg-gray-50 p-3 flex gap-2">
-          <input
-            type="url"
-            value={youtubeUrl}
-            onChange={(e) => setYoutubeUrl(e.target.value)}
-            placeholder="أدخل رابط فيديو يوتيوب"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded"
-            dir="ltr"
-          />
-          <button
-            onClick={addYoutube}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            type="button"
-          >
-            إضافة
-          </button>
-          <button
-            onClick={() => setShowYoutubeInput(false)}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-            type="button"
-          >
-            إلغاء
-          </button>
-        </div>
-      )}
-
-      {/* Editor Content */}
+      {/* Editor */}
       <EditorContent editor={editor} />
     </div>
   );

@@ -5,281 +5,351 @@ import { useRouter } from 'next/navigation';
 import { trpc } from '@/lib/trpc';
 import RichTextEditor from '../../components/RichTextEditor';
 import AIAssistant from '../../components/AIAssistant';
-import { ArrowRight, Save, Eye } from 'lucide-react';
+import { Save, Send, Upload, X } from 'lucide-react';
 
 export default function NewArticlePage() {
   const router = useRouter();
   const [title, setTitle] = useState('');
-  const [slug, setSlug] = useState('');
+  const [subtitle, setSubtitle] = useState('');
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [featuredImage, setFeaturedImage] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [featuredImage, setFeaturedImage] = useState('');
   const [seoTitle, setSeoTitle] = useState('');
   const [seoDescription, setSeoDescription] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [keywordInput, setKeywordInput] = useState('');
 
-  const { data: categories } = trpc.categories.list.useQuery();
-  const createArticle = trpc.articles.create.useMutation();
+  // Fetch categories
+  const { data: categoriesData } = trpc.categories.list.useQuery({});
+  const categories = categoriesData?.categories || [];
+
+  // Mutations
+  const createArticle = trpc.articles.create.useMutation({
+    onSuccess: () => {
+      router.push('/admin/articles');
+    },
+  });
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    setFeaturedImage('');
+  };
+
+  const addKeyword = () => {
+    if (keywordInput.trim() && !keywords.includes(keywordInput.trim())) {
+      setKeywords([...keywords, keywordInput.trim()]);
+      setKeywordInput('');
+    }
+  };
+
+  const removeKeyword = (keyword: string) => {
+    setKeywords(keywords.filter((k) => k !== keyword));
+  };
+
+  const handleKeywordKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addKeyword();
+    }
+  };
 
   const generateSlug = (text: string) => {
     return text
       .toLowerCase()
-      .replace(/[^\u0600-\u06FFa-z0-9\s-]/g, '')
+      .replace(/[^\u0621-\u064Aa-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim();
   };
 
-  const handleTitleChange = (value: string) => {
-    setTitle(value);
-    if (!slug) {
-      setSlug(generateSlug(value));
-    }
-  };
-
   const handleSubmit = async (status: 'draft' | 'review') => {
-    if (!title || !content) {
-      alert('الرجاء إدخال العنوان والمحتوى');
+    if (!title || !content || !categoryId) {
+      alert('الرجاء ملء جميع الحقول المطلوبة');
       return;
     }
 
-    setIsSubmitting(true);
+    // TODO: Upload image to storage service (Cloudinary, S3, etc.)
+    // For now, we'll use the preview or existing URL
+    const finalImage = imagePreview || featuredImage;
 
-    try {
-      const article = await createArticle.mutateAsync({
-        title,
-        slug: slug || generateSlug(title),
-        content,
-        excerpt,
-        categoryId: categoryId || undefined,
-        featuredImage: featuredImage || undefined,
-        seoTitle: seoTitle || undefined,
-        seoDescription: seoDescription || undefined,
-      });
+    const slug = generateSlug(title);
 
-      // تغيير الحالة إذا كانت review
-      if (status === 'review') {
-        // سيتم إضافة endpoint لتغيير الحالة
-      }
-
-      alert('تم إنشاء المقال بنجاح!');
-      router.push('/admin/articles');
-    } catch (error: any) {
-      alert('حدث خطأ: ' + error.message);
-    } finally {
-      setIsSubmitting(false);
-    }
+    createArticle.mutate({
+      title,
+      slug,
+      content,
+      excerpt: excerpt || undefined,
+      categoryId,
+      featuredImage: finalImage || undefined,
+      seoTitle: seoTitle || undefined,
+      seoDescription: seoDescription || undefined,
+      status,
+      subtitle: subtitle || undefined,
+      tags: keywords.length > 0 ? keywords : undefined,
+    });
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <ArrowRight className="w-5 h-5" />
-          </button>
-          <h1 className="text-2xl font-bold">مقال جديد</h1>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleSubmit('draft')}
-            disabled={isSubmitting}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50"
-          >
-            <Save className="w-4 h-4" />
-            حفظ كمسودة
-          </button>
-          <button
-            onClick={() => handleSubmit('review')}
-            disabled={isSubmitting}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-          >
-            <Eye className="w-4 h-4" />
-            إرسال للمراجعة
-          </button>
-        </div>
-      </div>
-
-      {/* Form */}
-      <div className="space-y-6">
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            العنوان *
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            placeholder="أدخل عنوان المقال"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            dir="rtl"
-          />
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">إنشاء مقال جديد</h1>
+          <p className="text-gray-600 mt-2">أضف مقالاً جديداً إلى بوابة سبق</p>
         </div>
 
-        {/* Slug */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            الرابط (Slug)
-          </label>
-          <input
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder="article-slug"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            dir="ltr"
-          />
-          <p className="text-sm text-gray-500 mt-1">
-            سيتم إنشاؤه تلقائياً من العنوان إذا تُرك فارغاً
-          </p>
-        </div>
-
-        {/* Category */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            الفئة
-          </label>
-          <select
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            dir="rtl"
-          >
-            <option value="">اختر فئة</option>
-            {categories?.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Featured Image */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            الصورة البارزة
-          </label>
-          <input
-            type="url"
-            value={featuredImage}
-            onChange={(e) => setFeaturedImage(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            dir="ltr"
-          />
-          {featuredImage && (
-            <div className="mt-3">
-              <img
-                src={featuredImage}
-                alt="معاينة"
-                className="max-w-xs rounded-lg border border-gray-300"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Excerpt */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            المقتطف
-          </label>
-          <textarea
-            value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value)}
-            placeholder="ملخص قصير للمقال (اختياري)"
-            rows={3}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            dir="rtl"
-          />
-        </div>
-
-        {/* AI Assistant */}
-        <AIAssistant
-          title={title}
-          content={content}
-          onApplySummary={(summary) => setExcerpt(summary)}
-          onApplyTitle={(newTitle) => setTitle(newTitle)}
-          onApplySEO={(description) => setSeoDescription(description)}
-        />
-
-        {/* Content */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            المحتوى *
-          </label>
-          <RichTextEditor
-            content={content}
-            onChange={setContent}
-            placeholder="ابدأ كتابة المقال..."
-          />
-        </div>
-
-        {/* SEO Section */}
-        <div className="border-t pt-6">
-          <h2 className="text-lg font-semibold mb-4">تحسين محركات البحث (SEO)</h2>
-          
-          <div className="space-y-4">
-            <div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Title */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                عنوان SEO
+                العنوان الرئيسي <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                value={seoTitle}
-                onChange={(e) => setSeoTitle(e.target.value)}
-                placeholder="عنوان مخصص لمحركات البحث"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                placeholder="أدخل عنوان المقال..."
                 dir="rtl"
               />
-              <p className="text-sm text-gray-500 mt-1">
-                سيتم استخدام العنوان الرئيسي إذا تُرك فارغاً
-              </p>
             </div>
 
-            <div>
+            {/* Subtitle */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                وصف SEO
+                العنوان الفرعي
+              </label>
+              <input
+                type="text"
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="أدخل العنوان الفرعي..."
+                dir="rtl"
+              />
+            </div>
+
+            {/* Featured Image */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                الصورة البارزة
+              </label>
+              
+              {imagePreview ? (
+                <div className="relative">
+                  <img
+                    src={imagePreview}
+                    alt="معاينة"
+                    className="w-full h-64 object-cover rounded-lg"
+                  />
+                  <button
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <label className="cursor-pointer">
+                    <span className="text-blue-600 hover:text-blue-700 font-medium">
+                      اختر صورة
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </label>
+                  <p className="text-gray-500 text-sm mt-2">أو اسحب وأفلت الصورة هنا</p>
+                </div>
+              )}
+            </div>
+
+            {/* Excerpt */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                المقتطف
               </label>
               <textarea
-                value={seoDescription}
-                onChange={(e) => setSeoDescription(e.target.value)}
-                placeholder="وصف مخصص لمحركات البحث"
+                value={excerpt}
+                onChange={(e) => setExcerpt(e.target.value)}
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="ملخص قصير للمقال..."
                 dir="rtl"
               />
             </div>
-          </div>
-        </div>
 
-        {/* Actions */}
-        <div className="flex gap-3 justify-end border-t pt-6">
-          <button
-            onClick={() => router.back()}
-            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-          >
-            إلغاء
-          </button>
-          <button
-            onClick={() => handleSubmit('draft')}
-            disabled={isSubmitting}
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
-          >
-            حفظ كمسودة
-          </button>
-          <button
-            onClick={() => handleSubmit('review')}
-            disabled={isSubmitting}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-          >
-            إرسال للمراجعة
-          </button>
+            {/* Content */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                المحتوى <span className="text-red-500">*</span>
+              </label>
+              <RichTextEditor
+                content={content}
+                onChange={setContent}
+                placeholder="ابدأ كتابة المقال..."
+              />
+            </div>
+
+            {/* Keywords */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                الكلمات المفتاحية
+              </label>
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={keywordInput}
+                  onChange={(e) => setKeywordInput(e.target.value)}
+                  onKeyPress={handleKeywordKeyPress}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="أضف كلمة مفتاحية واضغط Enter..."
+                  dir="rtl"
+                />
+                <button
+                  onClick={addKeyword}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  إضافة
+                </button>
+              </div>
+              {keywords.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {keywords.map((keyword) => (
+                    <span
+                      key={keyword}
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                    >
+                      {keyword}
+                      <button
+                        onClick={() => removeKeyword(keyword)}
+                        className="hover:text-blue-900"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* SEO */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">تحسين محركات البحث (SEO)</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    عنوان SEO
+                  </label>
+                  <input
+                    type="text"
+                    value={seoTitle}
+                    onChange={(e) => setSeoTitle(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="عنوان محسّن لمحركات البحث..."
+                    dir="rtl"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {seoTitle.length} / 60 حرف (الموصى به: 50-60)
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    وصف SEO
+                  </label>
+                  <textarea
+                    value={seoDescription}
+                    onChange={(e) => setSeoDescription(e.target.value)}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="وصف محسّن لمحركات البحث..."
+                    dir="rtl"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {seoDescription.length} / 160 حرف (الموصى به: 150-160)
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Category */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                الفئة <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={categoryId || ''}
+                onChange={(e) => setCategoryId(Number(e.target.value))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                dir="rtl"
+              >
+                <option value="">اختر فئة...</option>
+                {categories.map((category: any) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* AI Assistant */}
+            <AIAssistant
+              content={content}
+              title={title}
+              onApplySummary={setExcerpt}
+              onApplyTitle={setTitle}
+              onApplySEO={(seoData) => {
+                if (seoData.title) setSeoTitle(seoData.title);
+                if (seoData.description) setSeoDescription(seoData.description);
+              }}
+            />
+
+            {/* Actions */}
+            <div className="bg-white rounded-lg shadow-sm p-6 space-y-3">
+              <button
+                onClick={() => handleSubmit('draft')}
+                disabled={createArticle.isPending}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
+              >
+                <Save className="w-5 h-5" />
+                حفظ كمسودة
+              </button>
+              <button
+                onClick={() => handleSubmit('review')}
+                disabled={createArticle.isPending}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                <Send className="w-5 h-5" />
+                إرسال للمراجعة
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { router, publicProcedure, protectedProcedure } from '../trpc';
 import { getDb } from '@/lib/db';
 import { categories } from '@/drizzle/schema';
-import { eq, desc, like, or } from 'drizzle-orm';
+import { eq, desc, like, or, and, count } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
 export const categoriesRouter = router({
@@ -49,11 +49,11 @@ export const categoriesRouter = router({
         .offset(input.offset);
 
       // عد إجمالي التصنيفات
-      const totalCategories = await db.select().from(categories);
+      const totalCategories = await db.select({ count: count() }).from(categories).where(and(...conditions));
 
       return {
         categories: allCategories,
-        total: totalCategories.length,
+        total: totalCategories[0].count,
       };
     }),
 

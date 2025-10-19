@@ -1,29 +1,38 @@
 "use client";
 
-import Link from "next/link";
-import {
-  LayoutDashboard,
-  FileText,
-  PlusCircle,
-  FolderOpen,
-  Users,
-  Settings,
-  LogOut,
-} from "lucide-react";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { trpc } from "@/lib/trpc";
-import { useRouter } from "next/navigation";
+import AdminHeader from "./components/AdminHeader";
+import AdminSidebar from "./components/AdminSidebar";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-  const pathname = usePathname();
   const router = useRouter();
+  const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: user, isLoading: isUserLoading } = trpc.auth.me.useQuery();
 
+  // Get page title based on pathname
+  const getPageTitle = () => {
+    if (pathname === "/admin") return "لوحة القيادة";
+    if (pathname.startsWith("/admin/articles/new")) return "مقال جديد";
+    if (pathname.startsWith("/admin/articles")) return "المقالات";
+    if (pathname.startsWith("/admin/categories")) return "التصنيفات";
+    if (pathname.startsWith("/admin/users")) return "المستخدمون";
+    if (pathname.startsWith("/admin/settings")) return "الإعدادات";
+    return "بوابة سبق الذكية";
+  };
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
+  // Check authorization
   useEffect(() => {
     if (!isUserLoading && (!user || user.role !== "admin")) {
       router.push("/login");
@@ -33,110 +42,33 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   if (isUserLoading || !user || user.role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8f8f7]">
-        <div className="text-xl font-sans">جاري التحقق من الصلاحيات...</div>
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <p className="text-lg font-medium text-gray-700">
+            جاري التحقق من الصلاحيات...
+          </p>
+        </div>
       </div>
     );
   }
 
-  const logoutMutation = trpc.auth.logout.useMutation({
-    onSuccess: () => {
-      router.push("/login");
-    },
-    onError: (error) => {
-      alert("خطأ في تسجيل الخروج: " + error.message);
-    },
-  });
-
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
-
   return (
-    <div className="min-h-screen bg-[#f8f8f7] font-sans flex lg:flex-row flex-col">
+    <div className="min-h-screen bg-[#f8f8f7]">
+      {/* Header */}
+      <AdminHeader
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        title={getPageTitle()}
+      />
+
       {/* Sidebar */}
-      <aside className={`fixed right-0 top-0 h-full w-64 bg-white border-l border-[#f0f0ef] shadow-sm z-10 flex flex-col transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out`}>
-        <div className="p-6 flex-grow">
-          <h1 className="text-2xl font-bold text-gray-800 mb-8">بوابة سبق الذكية</h1>
-
-          <nav className="space-y-2">
-            <Link
-              href="/admin"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${pathname === "/admin" ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
-            >
-              <LayoutDashboard size={20} />
-              <span>لوحة القيادة</span>
-            </Link>
-
-            <Link
-              href="/admin/articles"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${pathname.startsWith("/admin/articles") ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
-            >
-              <FileText size={20} />
-              <span>المقالات</span>
-            </Link>
-
-            <Link
-              href="/admin/articles/new"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${pathname === "/admin/articles/new" ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
-            >
-              <PlusCircle size={20} />
-              <span>مقال جديد</span>
-            </Link>
-
-            <Link
-              href="/admin/categories"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${pathname.startsWith("/admin/categories") ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
-            >
-              <FolderOpen size={20} />
-              <span>التصنيفات</span>
-            </Link>
-
-            <Link
-              href="/admin/users"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${pathname.startsWith("/admin/users") ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
-            >
-              <Users size={20} />
-              <span>المستخدمون</span>
-            </Link>
-
-            <Link
-              href="/admin/settings"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${pathname.startsWith("/admin/settings") ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
-            >
-              <Settings size={20} />
-              <span>الإعدادات</span>
-            </Link>
-          </nav>
-        </div>
-
-        <div className="p-6 border-t border-[#f0f0ef]">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition w-full"
-          >
-            <LogOut size={20} />
-            <span>تسجيل الخروج</span>
-          </button>
-          <Link
-            href="/"
-            className="block text-center text-sm text-gray-600 hover:text-blue-600 transition mt-4"
-          >
-            العودة للموقع ←
-          </Link>
-        </div>
-      </aside>
+      <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
-      <main className="flex-grow p-8 lg:mr-64">
-        <button
-          className="lg:hidden fixed top-4 left-4 z-20 p-2 bg-blue-600 text-white rounded-md"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        >
-          {isSidebarOpen ? '✖' : '☰'}
-        </button>
-        {children}
+      <main className="pt-16 md:pr-64 min-h-screen">
+        <div className="p-4 md:p-8 max-w-7xl">
+          {children}
+        </div>
       </main>
     </div>
   );

@@ -57,7 +57,7 @@ export const usersRouter = router({
       const totalUsers = await db.select().from(users);
 
       return {
-        users: allUsers.map(u => ({
+        users: allUsers.map((u: any) => ({
           ...u,
           password: undefined, // إخفاء كلمة المرور
         })),

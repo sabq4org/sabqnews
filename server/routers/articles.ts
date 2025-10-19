@@ -7,7 +7,6 @@ import {
   articles, 
   articleStatus, 
   users,
-  categories,
   articleRevisions,
   editorialComments,
   workflowHistory,
@@ -60,23 +59,8 @@ export const articlesRouter = router({
 
       const [allArticles, totalArticles] = await Promise.all([
         db
-          .select({
-            ...articles,
-            author: {
-              id: users.id,
-              name: users.name,
-              avatar: users.avatar,
-            },
-            category: {
-              id: categories.id,
-              name: categories.name,
-              slug: categories.slug,
-              color: categories.color,
-            },
-          })
+          .select()
           .from(articles)
-          .leftJoin(users, eq(articles.authorId, users.id))
-          .leftJoin(categories, eq(articles.categoryId, categories.id))
           .where(and(...conditions))
           .orderBy(desc(articles.createdAt))
           .limit(limit)
@@ -88,7 +72,7 @@ export const articlesRouter = router({
       ]);
 
       return {
-        articles: allArticles.map((article: any) => ({ ...article, content: undefined })),
+        articles: allArticles.map((article) => ({ ...article, content: undefined })),
         total: totalArticles[0].count,
       };
     }),

@@ -6,6 +6,7 @@ import { trpc } from '@/lib/trpc';
 import RichTextEditor from '../../components/RichTextEditor';
 import AIAssistant from '../../components/AIAssistant';
 import { Save, Send, Upload, X, Eye, Star, Zap } from 'lucide-react';
+import { slugify } from '@/lib/utils';
 
 export default function NewArticlePage() {
   const router = useRouter();
@@ -71,14 +72,7 @@ export default function NewArticlePage() {
     }
   };
 
-  const generateSlug = (text: string) => {
-    return text
-      .toLowerCase()
-      .replace(/[^\u0621-\u064Aa-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-  };
+
 
   const handleSubmit = async (status: 'draft' | 'review' | 'published') => {
     if (!title || !content || !categoryId) {
@@ -108,7 +102,7 @@ export default function NewArticlePage() {
         finalImage = uploadData.url;
       }
 
-      const slug = generateSlug(title);
+      const slug = slugify(title);
 
       createArticle.mutate({
         title,

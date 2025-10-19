@@ -511,10 +511,10 @@ export default function UsersManagement() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  disabled={createUser.isLoading}
+                  disabled={createUser.isPending}
                   className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50"
                 >
-                  {createUser.isLoading ? "جاري الإضافة..." : "إضافة المستخدم"}
+                  {createUser.isPending ? "جاري الإضافة..." : "إضافة المستخدم"}
                 </button>
                 <button
                   type="button"
@@ -609,10 +609,10 @@ export default function UsersManagement() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  disabled={updateUser.isLoading}
+                  disabled={updateUser.isPending}
                   className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50"
                 >
-                  {updateUser.isLoading ? "جاري التحديث..." : "حفظ التغييرات"}
+                  {updateUser.isPending ? "جاري التحديث..." : "حفظ التغييرات"}
                 </button>
                 <button
                   type="button"
@@ -642,10 +642,10 @@ export default function UsersManagement() {
             <div className="flex gap-3">
               <button
                 onClick={handleDeleteUser}
-                disabled={deleteUser.isLoading}
+                disabled={deleteUser.isPending}
                 className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold disabled:opacity-50"
               >
-                {deleteUser.isLoading ? "جاري الحذف..." : "نعم، احذف"}
+                {deleteUser.isPending ? "جاري الحذف..." : "نعم، احذف"}
               </button>
               <button
                 onClick={() => {
@@ -694,10 +694,10 @@ export default function UsersManagement() {
             <div className="flex gap-3">
               <button
                 onClick={handleResetPassword}
-                disabled={resetPassword.isLoading || !newPassword || newPassword.length < 6}
+                disabled={resetPassword.isPending || !newPassword || newPassword.length < 6}
                 className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50"
               >
-                {resetPassword.isLoading ? "جاري التحديث..." : "تحديث كلمة المرور"}
+                {resetPassword.isPending ? "جاري التحديث..." : "تحديث كلمة المرور"}
               </button>
               <button
                 onClick={() => {

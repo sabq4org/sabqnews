@@ -87,7 +87,7 @@ html {
   }
 
   .btn-primary {
-    @apply px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium;
+    @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium;
   }
 
   .btn-secondary {
@@ -95,7 +95,7 @@ html {
   }
 
   .badge-ai {
-    @apply inline-flex items-center gap-1 px-3 py-1 bg-ai-100 dark:bg-ai-900 text-ai-700 dark:text-ai-300 rounded-full text-sm font-medium;
+    @apply inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-sm font-medium;
   }
 
   .badge-breaking {
@@ -173,11 +173,11 @@ html {
 }
 
 .gradient-primary {
-  @apply bg-gradient-to-r from-primary-500 to-primary-600;
+  @apply bg-gradient-to-r from-blue-500 to-blue-600;
 }
 
 .gradient-ai {
-  @apply bg-gradient-to-r from-ai-500 to-ai-600;
+  @apply bg-gradient-to-r from-green-500 to-green-600;
 }
 
 .shadow-lg-custom {

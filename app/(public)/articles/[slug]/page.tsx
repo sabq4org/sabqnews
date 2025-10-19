@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { getDb } from '@/lib/db';
-import { generateSummary } from '@/lib/ai-services';
+import { generateSummary, generateRecommendations } from '@/lib/ai-services';
 
 export const dynamic = 'force-dynamic';
 import { articles, categories, users } from '@/drizzle/schema';
@@ -72,8 +72,24 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const { article, category, author } = data;
-  const relatedArticles = await getRelatedArticles(article.id, article.categoryId);
   const summary = await generateSummary(article.content as string);
+
+  // Get related articles based on category first
+  const categoryBasedRecommendations = await getRelatedArticles(article.id, article.categoryId);
+
+  // Generate AI recommendations if article has tags (keywords)
+  let aiRecommendations: { title: string; slug: string }[] = [];
+  if (article.tags && Array.isArray(article.tags) && article.tags.length > 0) {
+    aiRecommendations = await generateRecommendations(
+      article.content as string,
+      article.title,
+      category?.name || '',
+      article.tags as string[]
+    );
+  }
+
+  // Prioritize AI recommendations if available, otherwise use category-based
+  const finalRecommendations = aiRecommendations.length > 0 ? aiRecommendations : categoryBasedRecommendations;
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -187,7 +203,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       </article>
 
       {/* Related Articles */}
-      <RecommendationsSection articles={relatedArticles} title="مقالات ذات صلة" />
+      <RecommendationsSection articles={finalRecommendations} title="مقالات موصى بها لك" />
     </div>
   );
 }

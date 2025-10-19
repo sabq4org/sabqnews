@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { router, protectedProcedure } from '../trpc';
+import { router, publicProcedure } from '../trpc';
 import { getDb } from '@/lib/db';
 import { users } from '@/drizzle/schema';
 import { eq, desc, like, or } from 'drizzle-orm';
@@ -8,7 +8,7 @@ import { nanoid } from 'nanoid';
 
 export const usersRouter = router({
   // الحصول على قائمة المستخدمين
-  list: protectedProcedure
+  list: publicProcedure
     .input(
       z.object({
         search: z.string().optional(),
@@ -66,7 +66,7 @@ export const usersRouter = router({
     }),
 
   // الحصول على مستخدم واحد
-  getById: protectedProcedure
+  getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -89,7 +89,7 @@ export const usersRouter = router({
     }),
 
   // إنشاء مستخدم جديد
-  create: protectedProcedure
+  create: publicProcedure
     .input(
       z.object({
         name: z.string().min(2, 'الاسم يجب أن يكون حرفين على الأقل'),
@@ -150,7 +150,7 @@ export const usersRouter = router({
     }),
 
   // تحديث مستخدم
-  update: protectedProcedure
+  update: publicProcedure
     .input(
       z.object({
         id: z.string(),
@@ -202,7 +202,7 @@ export const usersRouter = router({
     }),
 
   // إعادة تعيين كلمة المرور
-  resetPassword: protectedProcedure
+  resetPassword: publicProcedure
     .input(
       z.object({
         id: z.string(),
@@ -232,7 +232,7 @@ export const usersRouter = router({
     }),
 
   // حذف مستخدم
-  delete: protectedProcedure
+  delete: publicProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
       // فقط المدير
@@ -257,7 +257,7 @@ export const usersRouter = router({
     }),
 
   // إحصائيات المستخدمين
-  stats: protectedProcedure.query(async () => {
+  stats: publicProcedure.query(async () => {
     const db = await getDb();
     if (!db) throw new Error('Database connection failed');
 

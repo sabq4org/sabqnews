@@ -67,19 +67,19 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
 
       {/* Category Header */}
-      {/* Remove py-12 to connect directly to header */}
       <div className="relative text-white overflow-hidden bg-gray-900">
-        {/* Adjust height and remove padding/margin from top */}
         <div className="relative h-72 md:h-96 flex items-center justify-center pt-12 md:pt-16">
           {category.heroImage && (
-            <Image
-              src={category.heroImage}
-              alt={category.name}
-              fill
-              className="absolute inset-0 w-full h-full object-cover opacity-40 transition-opacity duration-300"
-              unoptimized // Added unoptimized to bypass Next.js Image optimization for external URLs
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+            <>
+              <Image
+                src={category.heroImage}
+                alt={category.name}
+                fill
+                className="absolute inset-0 w-full h-full object-cover opacity-40 transition-opacity duration-300"
+                unoptimized // Added unoptimized to bypass Next.js Image optimization for external URLs
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+            </>
           )}
           <div className="relative z-10 text-center text-white p-6 bg-black bg-opacity-60 rounded-lg shadow-2xl mx-4 max-w-3xl">
             <h1 className="text-4xl md:text-6xl font-extrabold mb-3 drop-shadow-lg leading-tight" dir="rtl">

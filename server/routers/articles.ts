@@ -227,16 +227,29 @@ export const articlesRouter = router({
       const newRevisionNumber = (currentArticle[0].currentRevision || 1) + 1;
 
       // تحديث المقال
-      const updatedArticle = await db
-        .update(articles)
-        .set({
-          ...updateData,
-          currentRevision: newRevisionNumber,
-          lastEditedBy: ctx.user.id,
-          updatedAt: new Date(),
-        })
-        .where(eq(articles.id, id))
-        .returning();
+      const fieldsToUpdate: Record<string, any> = { ...updateData };
+
+      // تحديث هذه الحقول فقط إذا كان هناك تحديث فعلي للمحتوى أو العنوان
+      if (input.content !== undefined || input.title !== undefined) {
+        fieldsToUpdate.currentRevision = newRevisionNumber;
+        fieldsToUpdate.lastEditedBy = ctx.user.id;
+        fieldsToUpdate.updatedAt = new Date();
+      } else if (input.isFeatured !== undefined || input.isBreaking !== undefined) {
+        // إذا كان التحديث فقط لـ isFeatured أو isBreaking، قم بتحديث updatedAt فقط
+        fieldsToUpdate.updatedAt = new Date();
+      }
+
+      let updatedArticle;
+      try {
+        updatedArticle = await db
+          .update(articles)
+          .set(fieldsToUpdate)
+          .where(eq(articles.id, id))
+          .returning();
+      } catch (error) {
+        console.error("Database update failed:", error);
+        throw error;
+      }
 
       // إنشاء مراجعة جديدة إذا تم تحديث المحتوى
       if (input.content || input.title) {

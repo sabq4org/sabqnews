@@ -57,18 +57,19 @@ export const articlesRouter = router({
         conditions.push(eq(articles.categoryId, categoryId));
       }
 
-      const allArticles = await db
-        .select()
-        .from(articles)
-        .where(and(...conditions))
-        .orderBy(desc(articles.createdAt))
-        .limit(limit)
-        .offset(offset);
-
-      const totalArticles = await db
-        .select({ count: count() })
-        .from(articles)
-        .where(and(...conditions));
+      const [allArticles, totalArticles] = await Promise.all([
+        db
+          .select()
+          .from(articles)
+          .where(and(...conditions))
+          .orderBy(desc(articles.createdAt))
+          .limit(limit)
+          .offset(offset),
+        db
+          .select({ count: count() })
+          .from(articles)
+          .where(and(...conditions)),
+      ]);
 
       return {
         articles: allArticles.map((article: any) => ({ ...article, content: undefined })),

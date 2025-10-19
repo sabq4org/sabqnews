@@ -4,8 +4,7 @@ export const dynamic = 'force-dynamic';
 import { articles, categories } from '@/drizzle/schema';
 import { desc, eq } from 'drizzle-orm';
 import { Calendar, Eye, TrendingUp, Search } from 'lucide-react';
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+
 import Link from 'next/link';
 
 async function getLatestArticles() {
@@ -36,7 +35,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+
 
       {/* Hero Section */}
       <div className="bg-gradient-to-l from-blue-600 to-blue-800 text-white py-16">
@@ -150,7 +149,7 @@ export default async function HomePage() {
         </div>
       </div>
 
-      <Footer />
+
     </div>
   );
 }

@@ -4,8 +4,7 @@ import { eq, count } from "drizzle-orm";
 import Link from "next/link";
 import Image from "next/image";
 import DynamicIcon, { IconName } from "@/components/DynamicIcon";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +32,7 @@ export default async function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header />
+
 
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20 shadow-lg">
@@ -102,7 +101,7 @@ export default async function CategoriesPage() {
       </div>
 
 
-      <Footer />
+
     </div>
   );
 }

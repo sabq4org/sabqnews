@@ -3,6 +3,7 @@ import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import Provider from "./_trpc/Provider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import ClientLayoutWrapper from "@/components/ClientLayoutWrapper";
 
 
 
@@ -28,7 +29,7 @@ export default function RootLayout({
         <ThemeProvider>
           <Provider>
             
-            {children}
+            <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
             
           </Provider>
         </ThemeProvider>

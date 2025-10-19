@@ -6,8 +6,7 @@ import { articles, categories } from '@/drizzle/schema';
 import { eq, desc } from 'drizzle-orm';
 import { Calendar, Eye } from 'lucide-react';
 import Link from 'next/link';
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+
 
 interface CategoryPageProps {
   params: {
@@ -56,7 +55,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+
 
       {/* Category Header */}
       <div className="bg-gradient-to-l from-blue-600 to-blue-800 text-white py-12">
@@ -139,7 +138,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         )}
       </div>
 
-      <Footer />
+
     </div>
   );
 }

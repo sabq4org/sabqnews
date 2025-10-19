@@ -19,9 +19,9 @@ export default function ArticlesPage() {
     offset: page * limit,
   });
 
-  // تحميل الفئات
-  const { data: categoriesData } = trpc.categories.list.useQuery({});
-  const categories = categoriesData?.categories || [];
+  // تحميل الفئات - معطل مؤقتاً
+  // const { data: categoriesData } = trpc.categories.list.useQuery({});
+  const categories: any[] = []; // categoriesData?.categories || [];
 
   // دالة للحصول على اسم الفئة من ID
   const getCategoryName = (categoryId: string | null) => {

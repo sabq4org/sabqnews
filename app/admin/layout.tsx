@@ -11,7 +11,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useRouter } from "next/navigation";
 
@@ -47,14 +47,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
   });
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const handleLogout = () => {
     logoutMutation.mutate();
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f8f7] font-sans flex">
+    <div className="min-h-screen bg-[#f8f8f7] font-sans flex lg:flex-row flex-col">
       {/* Sidebar */}
-      <aside className="fixed right-0 top-0 h-full w-64 bg-white border-l border-[#f0f0ef] shadow-sm z-10 flex flex-col">
+      <aside className={`fixed right-0 top-0 h-full w-64 bg-white border-l border-[#f0f0ef] shadow-sm z-10 flex flex-col transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out`}>
         <div className="p-6 flex-grow">
           <h1 className="text-2xl font-bold text-gray-800 mb-8">بوابة سبق الذكية</h1>
 
@@ -127,7 +129,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-grow mr-64 p-8">
+      <main className="flex-grow p-8 lg:mr-64">
+        <button
+          className="lg:hidden fixed top-4 left-4 z-20 p-2 bg-blue-600 text-white rounded-md"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        >
+          {isSidebarOpen ? '✖' : '☰'}
+        </button>
         {children}
       </main>
     </div>

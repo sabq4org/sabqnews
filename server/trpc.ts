@@ -20,15 +20,16 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 
 // Protected procedure with authentication middleware
-export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
-  if (!ctx.user) {
+export const protectedProcedure = t.procedure.use(async ({ next }) => {
+  const session = await getSession();
+
+  if (!session || !session.user) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "غير مصرح - يجب تسجيل الدخول" });
   }
 
   return next({
     ctx: {
-      ...ctx,
-      user: ctx.user,
+      user: session.user,
     },
   });
 });

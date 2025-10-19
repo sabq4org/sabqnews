@@ -7,12 +7,7 @@ const handler = (req: Request) =>
     endpoint: "/api/trpc",
     req,
     router: appRouter,
-    createContext: async () => {
-      const session = await getSession();
-      return {
-        user: session?.user || null,
-      };
-    },
+    createContext: () => ({}),
   });
 
 export { handler as GET, handler as POST };

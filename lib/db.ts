@@ -27,7 +27,6 @@ if (!connectionString) {
 const client = postgres(connectionString, {
   prepare: false, // Required for PgBouncer in transaction mode
   max: 1, // Limit connections in serverless environment
-  connect_timeout: 30, // Connection timeout in seconds
 });
 
 /**

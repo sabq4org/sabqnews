@@ -297,6 +297,29 @@ export const articlesRouter = router({
   // سير العمل (Workflow)
   // ============================================
 
+  stats: protectedProcedure
+    .query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin' && ctx.user.role !== 'editor' && ctx.user.role !== 'writer') {
+        throw new Error('غير مصرح لك بالوصول إلى هذه الميزة');
+      }
+
+      const db = getDb();
+
+      const [totalArticles, publishedArticles, draftArticles, totalViews] = await Promise.all([
+        db.select({ count: count() }).from(articles),
+        db.select({ count: count() }).from(articles).where(eq(articles.status, 'published')),
+        db.select({ count: count() }).from(articles).where(eq(articles.status, 'draft')),
+        db.select({ total: sql<number>`sum(${articles.views})` }).from(articles),
+      ]);
+
+      return {
+        totalArticles: totalArticles[0].count,
+        publishedArticles: publishedArticles[0].count,
+        draftArticles: draftArticles[0].count,
+        totalViews: totalViews[0].total || 0,
+      };
+    }),
+
   changeStatus: protectedProcedure
     .input(
       z.object({

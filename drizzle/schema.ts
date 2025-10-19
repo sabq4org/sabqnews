@@ -2,41 +2,49 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
-  int,
+  integer,
   json,
-  mysqlEnum,
-  mysqlTable,
+  pgEnum,
+  pgTable,
   text,
   timestamp,
   uniqueIndex,
   varchar,
-} from "drizzle-orm/mysql-core";
+} from "drizzle-orm/pg-core";
 
 /**
- * مخطط قاعدة البيانات لبوابة سبق الذكية
+ * مخطط قاعدة البيانات لبوابة سبق الذكية (PostgreSQL)
  * يتضمن جميع الجداول اللازمة لنظام إدارة المحتوى الإعلامي
  */
 
 // ============================================
+// Enums
+// ============================================
+export const userRoleEnum = pgEnum("user_role", ["user", "editor", "admin"]);
+export const articleStatusEnum = pgEnum("article_status", ["draft", "published", "archived"]);
+export const commentStatusEnum = pgEnum("comment_status", ["pending", "approved", "rejected"]);
+export const notificationTypeEnum = pgEnum("notification_type", ["info", "warning", "success", "error"]);
+
+// ============================================
 // جدول المستخدمين (Users)
 // ============================================
-export const users = mysqlTable(
+export const users = pgTable(
   "users",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
     name: text("name"),
     email: varchar("email", { length: 320 }),
-    loginMethod: varchar("loginMethod", { length: 64 }),
-    role: mysqlEnum("role", ["user", "editor", "admin"]).default("user").notNull(),
-    avatarUrl: varchar("avatarUrl", { length: 500 }),
+    loginMethod: varchar("login_method", { length: 64 }),
+    role: userRoleEnum("role").default("user").notNull(),
+    avatarUrl: varchar("avatar_url", { length: 500 }),
     bio: text("bio"),
-    isActive: boolean("isActive").default(true).notNull(),
-    createdAt: timestamp("createdAt").defaultNow(),
-    lastSignedIn: timestamp("lastSignedIn").defaultNow(),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+    lastSignedIn: timestamp("last_signed_in").defaultNow(),
   },
   (table) => ({
-    emailIdx: index("email_idx").on(table.email),
-    roleIdx: index("role_idx").on(table.role),
+    emailIdx: index("users_email_idx").on(table.email),
+    roleIdx: index("users_role_idx").on(table.role),
   })
 );
 
@@ -46,284 +54,202 @@ export type InsertUser = typeof users.$inferInsert;
 // ============================================
 // جدول التصنيفات (Categories)
 // ============================================
-export const categories = mysqlTable(
+export const categories = pgTable(
   "categories",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
     name: varchar("name", { length: 255 }).notNull(),
     slug: varchar("slug", { length: 255 }).notNull().unique(),
     description: text("description"),
-    iconUrl: varchar("iconUrl", { length: 500 }),
+    iconUrl: varchar("icon_url", { length: 500 }),
     color: varchar("color", { length: 50 }),
-    parentId: varchar("parentId", { length: 64 }),
-    displayOrder: int("displayOrder").default(0),
-    isActive: boolean("isActive").default(true).notNull(),
-    createdAt: timestamp("createdAt").defaultNow(),
-    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
+    parentId: varchar("parent_id", { length: 64 }),
+    displayOrder: integer("display_order").default(0),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
   },
   (table) => ({
-    slugIdx: uniqueIndex("slug_idx").on(table.slug),
-    parentIdx: index("parent_idx").on(table.parentId),
-    activeIdx: index("active_idx").on(table.isActive),
+    slugIdx: uniqueIndex("categories_slug_idx").on(table.slug),
+    parentIdx: index("categories_parent_idx").on(table.parentId),
+    activeIdx: index("categories_active_idx").on(table.isActive),
   })
 );
 
 export type Category = typeof categories.$inferSelect;
 export type InsertCategory = typeof categories.$inferInsert;
 
-// علاقات التصنيفات (للتصنيفات الفرعية)
-export const categoriesRelations = relations(categories, ({ one, many }) => ({
-  parent: one(categories, {
-    fields: [categories.parentId],
-    references: [categories.id],
-    relationName: "subcategories",
-  }),
-  children: many(categories, { relationName: "subcategories" }),
-  articles: many(articles),
-}));
-
 // ============================================
 // جدول المقالات (Articles)
 // ============================================
-export const articles = mysqlTable(
+export const articles = pgTable(
   "articles",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
     title: varchar("title", { length: 500 }).notNull(),
     slug: varchar("slug", { length: 500 }).notNull().unique(),
-    content: text("content").notNull(), // محتوى المقال بصيغة HTML أو JSON
+    content: text("content").notNull(),
     excerpt: text("excerpt"),
-    authorId: varchar("authorId", { length: 64 }).notNull(),
-    categoryId: varchar("categoryId", { length: 64 }),
-    status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
-    featuredImage: varchar("featuredImage", { length: 500 }),
-    featuredImageAlt: varchar("featuredImageAlt", { length: 255 }),
+    authorId: varchar("author_id", { length: 64 }).notNull(),
+    categoryId: varchar("category_id", { length: 64 }),
+    status: articleStatusEnum("status").default("draft").notNull(),
+    featuredImage: varchar("featured_image", { length: 500 }),
     tags: json("tags").$type<string[]>(),
-    publishedAt: timestamp("publishedAt"),
-    scheduledFor: timestamp("scheduledFor"),
-    views: int("views").default(0),
-    likes: int("likes").default(0),
-    shares: int("shares").default(0),
-    // حقول SEO
-    seoTitle: varchar("seoTitle", { length: 255 }),
-    seoDescription: text("seoDescription"),
-    seoKeywords: text("seoKeywords"),
-    // حقول إضافية
-    isFeatured: boolean("isFeatured").default(false),
-    isBreaking: boolean("isBreaking").default(false),
-    allowComments: boolean("allowComments").default(true),
-    readingTime: int("readingTime"), // بالدقائق
-    createdAt: timestamp("createdAt").defaultNow(),
-    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
+    views: integer("views").default(0),
+    likes: integer("likes").default(0),
+    isFeatured: boolean("is_featured").default(false),
+    isBreaking: boolean("is_breaking").default(false),
+    publishedAt: timestamp("published_at"),
+    seoTitle: varchar("seo_title", { length: 255 }),
+    seoDescription: text("seo_description"),
+    seoKeywords: json("seo_keywords").$type<string[]>(),
+    readingTime: integer("reading_time"),
+    videoUrl: varchar("video_url", { length: 500 }),
+    audioUrl: varchar("audio_url", { length: 500 }),
+    sourceUrl: varchar("source_url", { length: 500 }),
+    sourceName: varchar("source_name", { length: 255 }),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
   },
   (table) => ({
-    slugIdx: uniqueIndex("article_slug_idx").on(table.slug),
-    authorIdx: index("author_idx").on(table.authorId),
-    categoryIdx: index("category_idx").on(table.categoryId),
-    statusIdx: index("status_idx").on(table.status),
-    publishedIdx: index("published_idx").on(table.publishedAt),
-    featuredIdx: index("featured_idx").on(table.isFeatured),
+    slugIdx: uniqueIndex("articles_slug_idx").on(table.slug),
+    authorIdx: index("articles_author_idx").on(table.authorId),
+    categoryIdx: index("articles_category_idx").on(table.categoryId),
+    statusIdx: index("articles_status_idx").on(table.status),
+    publishedIdx: index("articles_published_idx").on(table.publishedAt),
+    featuredIdx: index("articles_featured_idx").on(table.isFeatured),
   })
 );
 
 export type Article = typeof articles.$inferSelect;
 export type InsertArticle = typeof articles.$inferInsert;
 
-// علاقات المقالات
-export const articlesRelations = relations(articles, ({ one, many }) => ({
-  author: one(users, {
-    fields: [articles.authorId],
-    references: [users.id],
-  }),
-  category: one(categories, {
-    fields: [articles.categoryId],
-    references: [categories.id],
-  }),
-  aiFeatures: one(aiFeatures),
-  comments: many(comments),
-}));
-
 // ============================================
 // جدول مميزات الذكاء الاصطناعي (AI Features)
 // ============================================
-export const aiFeatures = mysqlTable(
+export const aiFeatures = pgTable(
   "ai_features",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
-    articleId: varchar("articleId", { length: 64 }).notNull().unique(),
-    // الملخص التلقائي
+    articleId: varchar("article_id", { length: 64 }).notNull(),
     summary: text("summary"),
-    // عناوين مقترحة
-    suggestedTitles: json("suggestedTitles").$type<string[]>(),
-    // تحليل المشاعر
-    sentiment: mysqlEnum("sentiment", ["positive", "negative", "neutral"]),
-    sentimentScore: int("sentimentScore"), // من 0 إلى 100
-    // كلمات مفتاحية مقترحة
+    sentiment: varchar("sentiment", { length: 50 }),
     keywords: json("keywords").$type<string[]>(),
-    // درجة سهولة القراءة
-    readabilityScore: int("readabilityScore"), // من 0 إلى 100
-    // فحص الانتحال
-    plagiarismCheck: json("plagiarismCheck").$type<{
-      checked: boolean;
-      score: number;
-      sources?: string[];
-    }>(),
-    // اقتراحات تحسين
-    suggestions: json("suggestions").$type<string[]>(),
-    createdAt: timestamp("createdAt").defaultNow(),
-    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
+    suggestedTitles: json("suggested_titles").$type<string[]>(),
+    relatedTopics: json("related_topics").$type<string[]>(),
+    factCheckStatus: varchar("fact_check_status", { length: 50 }),
+    readabilityScore: integer("readability_score"),
+    toneAnalysis: text("tone_analysis"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
   },
   (table) => ({
-    articleIdx: uniqueIndex("article_ai_idx").on(table.articleId),
+    articleIdx: index("ai_features_article_idx").on(table.articleId),
   })
 );
 
 export type AiFeature = typeof aiFeatures.$inferSelect;
 export type InsertAiFeature = typeof aiFeatures.$inferInsert;
 
-// علاقات مميزات الذكاء الاصطناعي
-export const aiFeaturesRelations = relations(aiFeatures, ({ one }) => ({
-  article: one(articles, {
-    fields: [aiFeatures.articleId],
-    references: [articles.id],
-  }),
-}));
-
 // ============================================
 // جدول التعليقات (Comments)
 // ============================================
-export const comments = mysqlTable(
+export const comments = pgTable(
   "comments",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
-    articleId: varchar("articleId", { length: 64 }).notNull(),
-    userId: varchar("userId", { length: 64 }),
-    authorName: varchar("authorName", { length: 255 }),
-    authorEmail: varchar("authorEmail", { length: 320 }),
+    articleId: varchar("article_id", { length: 64 }).notNull(),
+    userId: varchar("user_id", { length: 64 }).notNull(),
+    parentId: varchar("parent_id", { length: 64 }),
     content: text("content").notNull(),
-    parentId: varchar("parentId", { length: 64 }), // للردود
-    status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending").notNull(),
-    isApproved: boolean("isApproved").default(false),
-    createdAt: timestamp("createdAt").defaultNow(),
-    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
+    status: commentStatusEnum("status").default("pending").notNull(),
+    likes: integer("likes").default(0),
+    isEdited: boolean("is_edited").default(false),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
   },
   (table) => ({
-    articleIdx: index("comment_article_idx").on(table.articleId),
-    userIdx: index("comment_user_idx").on(table.userId),
-    parentIdx: index("comment_parent_idx").on(table.parentId),
-    statusIdx: index("comment_status_idx").on(table.status),
+    articleIdx: index("comments_article_idx").on(table.articleId),
+    userIdx: index("comments_user_idx").on(table.userId),
+    parentIdx: index("comments_parent_idx").on(table.parentId),
+    statusIdx: index("comments_status_idx").on(table.status),
   })
 );
 
 export type Comment = typeof comments.$inferSelect;
 export type InsertComment = typeof comments.$inferInsert;
 
-// علاقات التعليقات
-export const commentsRelations = relations(comments, ({ one, many }) => ({
-  article: one(articles, {
-    fields: [comments.articleId],
-    references: [articles.id],
-  }),
-  user: one(users, {
-    fields: [comments.userId],
-    references: [users.id],
-  }),
-  parent: one(comments, {
-    fields: [comments.parentId],
-    references: [comments.id],
-    relationName: "replies",
-  }),
-  replies: many(comments, { relationName: "replies" }),
-}));
-
 // ============================================
 // جدول الوسائط (Media)
 // ============================================
-export const media = mysqlTable(
+export const media = pgTable(
   "media",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
-    fileName: varchar("fileName", { length: 255 }).notNull(),
-    fileUrl: varchar("fileUrl", { length: 500 }).notNull(),
-    fileType: varchar("fileType", { length: 100 }).notNull(), // image/jpeg, video/mp4, etc.
-    fileSize: int("fileSize").notNull(), // بالبايت
-    width: int("width"),
-    height: int("height"),
-    altText: varchar("altText", { length: 255 }),
+    filename: varchar("filename", { length: 255 }).notNull(),
+    url: varchar("url", { length: 500 }).notNull(),
+    mimeType: varchar("mime_type", { length: 100 }),
+    size: integer("size"),
+    width: integer("width"),
+    height: integer("height"),
+    uploaderId: varchar("uploader_id", { length: 64 }).notNull(),
+    alt: text("alt"),
     caption: text("caption"),
-    uploadedBy: varchar("uploadedBy", { length: 64 }).notNull(),
-    createdAt: timestamp("createdAt").defaultNow(),
+    createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
-    uploaderIdx: index("uploader_idx").on(table.uploadedBy),
-    typeIdx: index("type_idx").on(table.fileType),
+    uploaderIdx: index("media_uploader_idx").on(table.uploaderId),
+    mimeIdx: index("media_mime_idx").on(table.mimeType),
   })
 );
 
 export type Media = typeof media.$inferSelect;
 export type InsertMedia = typeof media.$inferInsert;
 
-// علاقات الوسائط
-export const mediaRelations = relations(media, ({ one }) => ({
-  uploader: one(users, {
-    fields: [media.uploadedBy],
-    references: [users.id],
-  }),
-}));
-
 // ============================================
 // جدول الإشعارات (Notifications)
 // ============================================
-export const notifications = mysqlTable(
+export const notifications = pgTable(
   "notifications",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
-    userId: varchar("userId", { length: 64 }).notNull(),
+    userId: varchar("user_id", { length: 64 }).notNull(),
     title: varchar("title", { length: 255 }).notNull(),
     message: text("message").notNull(),
-    type: mysqlEnum("type", ["info", "success", "warning", "error"]).default("info").notNull(),
-    isRead: boolean("isRead").default(false),
-    link: varchar("link", { length: 500 }),
-    createdAt: timestamp("createdAt").defaultNow(),
+    type: notificationTypeEnum("type").default("info").notNull(),
+    isRead: boolean("is_read").default(false),
+    createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
-    userIdx: index("notification_user_idx").on(table.userId),
-    readIdx: index("notification_read_idx").on(table.isRead),
+    userIdx: index("notifications_user_idx").on(table.userId),
+    readIdx: index("notifications_read_idx").on(table.isRead),
   })
 );
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
 
-// علاقات الإشعارات
-export const notificationsRelations = relations(notifications, ({ one }) => ({
-  user: one(users, {
-    fields: [notifications.userId],
-    references: [users.id],
-  }),
-}));
-
 // ============================================
 // جدول التحليلات (Analytics)
 // ============================================
-export const analytics = mysqlTable(
+export const analytics = pgTable(
   "analytics",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
-    articleId: varchar("articleId", { length: 64 }),
-    eventType: varchar("eventType", { length: 50 }).notNull(), // view, like, share, comment
-    userId: varchar("userId", { length: 64 }),
-    sessionId: varchar("sessionId", { length: 100 }),
-    ipAddress: varchar("ipAddress", { length: 45 }),
-    userAgent: text("userAgent"),
-    referrer: varchar("referrer", { length: 500 }),
-    metadata: json("metadata"),
-    createdAt: timestamp("createdAt").defaultNow(),
+    articleId: varchar("article_id", { length: 64 }).notNull(),
+    date: timestamp("date").notNull(),
+    views: integer("views").default(0),
+    uniqueViews: integer("unique_views").default(0),
+    likes: integer("likes").default(0),
+    shares: integer("shares").default(0),
+    comments: integer("comments").default(0),
+    avgReadTime: integer("avg_read_time"),
+    bounceRate: integer("bounce_rate"),
   },
   (table) => ({
     articleIdx: index("analytics_article_idx").on(table.articleId),
-    eventIdx: index("analytics_event_idx").on(table.eventType),
-    dateIdx: index("analytics_date_idx").on(table.createdAt),
+    dateIdx: index("analytics_date_idx").on(table.date),
+    viewsIdx: index("analytics_views_idx").on(table.views),
   })
 );
 
@@ -333,24 +259,23 @@ export type InsertAnalytics = typeof analytics.$inferInsert;
 // ============================================
 // جدول سجل النشاطات (Activity Logs)
 // ============================================
-export const activityLogs = mysqlTable(
+export const activityLogs = pgTable(
   "activity_logs",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
-    userId: varchar("userId", { length: 64 }).notNull(),
-    action: varchar("action", { length: 100 }).notNull(), // create, update, delete, etc.
-    entityType: varchar("entityType", { length: 50 }).notNull(), // article, category, user, etc.
-    entityId: varchar("entityId", { length: 64 }),
-    oldValue: json("oldValue"),
-    newValue: json("newValue"),
-    ipAddress: varchar("ipAddress", { length: 45 }),
-    userAgent: text("userAgent"),
-    createdAt: timestamp("createdAt").defaultNow(),
+    userId: varchar("user_id", { length: 64 }).notNull(),
+    action: varchar("action", { length: 100 }).notNull(),
+    entityType: varchar("entity_type", { length: 50 }),
+    entityId: varchar("entity_id", { length: 64 }),
+    details: json("details"),
+    ipAddress: varchar("ip_address", { length: 45 }),
+    userAgent: text("user_agent"),
+    createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
-    userIdx: index("log_user_idx").on(table.userId),
-    entityIdx: index("log_entity_idx").on(table.entityType, table.entityId),
-    dateIdx: index("log_date_idx").on(table.createdAt),
+    userIdx: index("activity_logs_user_idx").on(table.userId),
+    actionIdx: index("activity_logs_action_idx").on(table.action),
+    entityIdx: index("activity_logs_entity_idx").on(table.entityType, table.entityId),
   })
 );
 

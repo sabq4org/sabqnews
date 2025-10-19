@@ -65,8 +65,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
-      <main className="pt-16 md:pr-64 min-h-screen">
-        <div className="p-4 md:p-8 max-w-7xl">
+      <main className="pt-16 md:pr-64 lg:pr-72 xl:pr-80 min-h-screen">
+        <div className="p-4 md:p-6 lg:p-8 max-w-full lg:max-w-7xl mx-auto">
           {children}
         </div>
       </main>

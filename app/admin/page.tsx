@@ -2,117 +2,200 @@
 
 import { trpc } from "../../lib/trpc";
 import Link from "next/link";
+import { 
+  LayoutDashboard, 
+  FileText, 
+  PlusCircle, 
+  FolderOpen, 
+  TrendingUp,
+  Eye,
+  Heart,
+  FileEdit
+} from "lucide-react";
 
 export default function AdminDashboard() {
   const { data: stats, isLoading } = trpc.articles.stats.useQuery();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">جاري التحميل...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f8f7]">
+        <div className="text-xl font-['IBM_Plex_Sans_Arabic']">جاري التحميل...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">لوحة التحكم - بوابة سبق الذكية</h1>
-          <Link href="/" className="text-blue-600 hover:text-blue-800">
-            العودة للموقع
+    <div className="min-h-screen bg-[#f8f8f7] font-['IBM_Plex_Sans_Arabic']">
+      {/* Sidebar */}
+      <aside className="fixed right-0 top-0 h-full w-64 bg-white border-l border-[#f0f0ef] shadow-sm">
+        <div className="p-6">
+          <h1 className="text-2xl font-bold text-gray-800 mb-8">بوابة سبق الذكية</h1>
+          
+          <nav className="space-y-2">
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-600 font-semibold"
+            >
+              <LayoutDashboard size={20} />
+              <span>لوحة القيادة</span>
+            </Link>
+            
+            <Link
+              href="/admin/articles"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+            >
+              <FileText size={20} />
+              <span>المقالات</span>
+            </Link>
+            
+            <Link
+              href="/admin/articles/new"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+            >
+              <PlusCircle size={20} />
+              <span>مقال جديد</span>
+            </Link>
+            
+            <Link
+              href="/admin/categories"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+            >
+              <FolderOpen size={20} />
+              <span>التصنيفات</span>
+            </Link>
+          </nav>
+        </div>
+        
+        <div className="absolute bottom-0 right-0 left-0 p-6 border-t border-[#f0f0ef]">
+          <Link
+            href="/"
+            className="block text-center text-sm text-gray-600 hover:text-blue-600 transition"
+          >
+            العودة للموقع ←
           </Link>
         </div>
-      </header>
-
-      {/* Navigation */}
-      <nav className="bg-white border-b">
-        <div className="container mx-auto px-4">
-          <ul className="flex gap-6 py-3">
-            <li>
-              <Link href="/admin" className="text-blue-600 font-semibold">
-                الرئيسية
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/articles" className="text-gray-700 hover:text-blue-600">
-                المقالات
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/articles/new" className="text-gray-700 hover:text-blue-600">
-                مقال جديد
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/categories" className="text-gray-700 hover:text-blue-600">
-                التصنيفات
-              </Link>
-            </li>
-          </ul>
-        </div>
-      </nav>
+      </aside>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="mr-64 p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">مرحباً بك</h2>
+          <p className="text-gray-600">نظرة عامة على أداء البوابة</p>
+        </div>
+
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="text-gray-600 text-sm mb-2">إجمالي المقالات</div>
-            <div className="text-3xl font-bold text-blue-600">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-xl p-6 border border-[#f0f0ef] shadow-sm hover:shadow-md transition">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <FileText className="text-blue-600" size={24} />
+              </div>
+              <TrendingUp className="text-green-500" size={20} />
+            </div>
+            <div className="text-3xl font-bold text-gray-800 mb-1">
               {stats?.totalArticles || 0}
             </div>
+            <div className="text-sm text-gray-600">إجمالي المقالات</div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="text-gray-600 text-sm mb-2">المقالات المنشورة</div>
-            <div className="text-3xl font-bold text-green-600">
+
+          <div className="bg-white rounded-xl p-6 border border-[#f0f0ef] shadow-sm hover:shadow-md transition">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-green-50 rounded-lg">
+                <FileEdit className="text-green-600" size={24} />
+              </div>
+              <TrendingUp className="text-green-500" size={20} />
+            </div>
+            <div className="text-3xl font-bold text-gray-800 mb-1">
               {stats?.publishedArticles || 0}
             </div>
+            <div className="text-sm text-gray-600">المقالات المنشورة</div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="text-gray-600 text-sm mb-2">المسودات</div>
-            <div className="text-3xl font-bold text-yellow-600">
+
+          <div className="bg-white rounded-xl p-6 border border-[#f0f0ef] shadow-sm hover:shadow-md transition">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-yellow-50 rounded-lg">
+                <FileText className="text-yellow-600" size={24} />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-gray-800 mb-1">
               {stats?.draftArticles || 0}
             </div>
+            <div className="text-sm text-gray-600">المسودات</div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="text-gray-600 text-sm mb-2">إجمالي المشاهدات</div>
-            <div className="text-3xl font-bold text-purple-600">
-              {stats?.totalViews || 0}
+
+          <div className="bg-white rounded-xl p-6 border border-[#f0f0ef] shadow-sm hover:shadow-md transition">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-purple-50 rounded-lg">
+                <Eye className="text-purple-600" size={24} />
+              </div>
+              <TrendingUp className="text-green-500" size={20} />
             </div>
+            <div className="text-3xl font-bold text-gray-800 mb-1">
+              {stats?.totalViews?.toLocaleString('ar-SA') || 0}
+            </div>
+            <div className="text-sm text-gray-600">إجمالي المشاهدات</div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-          <h2 className="text-xl font-bold mb-4">إجراءات سريعة</h2>
+        <div className="bg-white rounded-xl p-6 border border-[#f0f0ef] shadow-sm mb-8">
+          <h3 className="text-xl font-bold text-gray-800 mb-6">إجراءات سريعة</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link
               href="/admin/articles/new"
-              className="bg-blue-600 text-white p-4 rounded-lg text-center hover:bg-blue-700 transition"
+              className="group relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              ✍️ كتابة مقال جديد
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-lg">
+                  <PlusCircle size={28} />
+                </div>
+                <div>
+                  <div className="font-bold text-lg mb-1">كتابة مقال جديد</div>
+                  <div className="text-sm text-blue-100">ابدأ في إنشاء محتوى جديد</div>
+                </div>
+              </div>
             </Link>
+
             <Link
               href="/admin/articles"
-              className="bg-green-600 text-white p-4 rounded-lg text-center hover:bg-green-700 transition"
+              className="group relative overflow-hidden bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              📄 إدارة المقالات
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-lg">
+                  <FileText size={28} />
+                </div>
+                <div>
+                  <div className="font-bold text-lg mb-1">إدارة المقالات</div>
+                  <div className="text-sm text-green-100">عرض وتحرير المقالات</div>
+                </div>
+              </div>
             </Link>
+
             <Link
               href="/admin/categories"
-              className="bg-purple-600 text-white p-4 rounded-lg text-center hover:bg-purple-700 transition"
+              className="group relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              📁 إدارة التصنيفات
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-lg">
+                  <FolderOpen size={28} />
+                </div>
+                <div>
+                  <div className="font-bold text-lg mb-1">إدارة التصنيفات</div>
+                  <div className="text-sm text-purple-100">تنظيم المحتوى</div>
+                </div>
+              </div>
             </Link>
           </div>
         </div>
 
-        {/* Recent Articles */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4">آخر المقالات</h2>
-          <div className="text-gray-600">قريباً...</div>
+        {/* Recent Activity */}
+        <div className="bg-white rounded-xl p-6 border border-[#f0f0ef] shadow-sm">
+          <h3 className="text-xl font-bold text-gray-800 mb-6">النشاط الأخير</h3>
+          <div className="text-center py-12 text-gray-500">
+            <FileText size={48} className="mx-auto mb-4 opacity-30" />
+            <p>لا توجد أنشطة حديثة</p>
+          </div>
         </div>
       </main>
     </div>

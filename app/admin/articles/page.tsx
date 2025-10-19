@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { trpc } from '@/lib/trpc';
-import { Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, Eye, Star, Zap } from 'lucide-react';
 
 export default function ArticlesPage() {
   const router = useRouter();
@@ -19,6 +19,17 @@ export default function ArticlesPage() {
     offset: page * limit,
   });
 
+  // تحميل الفئات
+  const { data: categoriesData } = trpc.categories.list.useQuery({});
+  const categories = categoriesData?.categories || [];
+
+  // دالة للحصول على اسم الفئة من ID
+  const getCategoryName = (categoryId: string | null) => {
+    if (!categoryId) return '-';
+    const category = categories.find((cat: any) => cat.id === categoryId);
+    return category?.name || categoryId;
+  };
+
   const deleteArticle = trpc.articles.delete.useMutation({
     onSuccess: () => {
       refetch();
@@ -28,6 +39,29 @@ export default function ArticlesPage() {
       alert('حدث خطأ: ' + error.message);
     },
   });
+
+  const updateArticle = trpc.articles.update.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+    onError: (error) => {
+      alert('حدث خطأ: ' + error.message);
+    },
+  });
+
+  const toggleFeatured = async (article: any) => {
+    await updateArticle.mutateAsync({
+      id: article.id,
+      isFeatured: !article.isFeatured,
+    });
+  };
+
+  const toggleBreaking = async (article: any) => {
+    await updateArticle.mutateAsync({
+      id: article.id,
+      isBreaking: !article.isBreaking,
+    });
+  };
 
   const handleDelete = async (id: string, title: string) => {
     if (confirm(`هل أنت متأكد من حذف المقال "${title}"؟`)) {
@@ -137,6 +171,9 @@ export default function ArticlesPage() {
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     تاريخ الإنشاء
                   </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    خبر عاجل
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     إجراءات
                   </th>
@@ -170,7 +207,7 @@ export default function ArticlesPage() {
                       {getStatusBadge(article.status)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {article.categoryId || '-'}
+                      {getCategoryName(article.categoryId)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {article.views || 0}
@@ -178,8 +215,36 @@ export default function ArticlesPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(article.createdAt).toLocaleDateString('ar-SA')}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <button
+                        onClick={() => toggleBreaking(article)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          article.isBreaking ? 'bg-red-600' : 'bg-gray-200'
+                        }`}
+                        title={article.isBreaking ? 'خبر عاجل' : 'خبر عادي'}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            article.isBreaking ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => toggleFeatured(article)}
+                          className={`p-2 rounded ${
+                            article.isFeatured
+                              ? 'text-yellow-500 hover:bg-yellow-50'
+                              : 'text-gray-400 hover:bg-gray-50'
+                          }`}
+                          title={article.isFeatured ? 'إلغاء التمييز' : 'تمييز الخبر'}
+                        >
+                          <Star className={`w-4 h-4 ${
+                            article.isFeatured ? 'fill-yellow-500' : ''
+                          }`} />
+                        </button>
                         <button
                           onClick={() => router.push(`/admin/articles/${article.id}`)}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded"

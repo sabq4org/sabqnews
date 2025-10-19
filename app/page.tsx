@@ -4,6 +4,8 @@ export const dynamic = 'force-dynamic';
 import { articles, categories } from '@/drizzle/schema';
 import { desc, eq } from 'drizzle-orm';
 import { Calendar, Eye, TrendingUp, Search } from 'lucide-react';
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import Link from 'next/link';
 
 async function getLatestArticles() {
@@ -34,35 +36,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-3xl font-bold text-blue-600">
-              سبق
-            </Link>
-            
-            <nav className="hidden md:flex items-center gap-6">
-              {allCategories.slice(0, 5).map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/categories/${category.slug}`}
-                  className="text-gray-700 hover:text-blue-600 font-medium"
-                >
-                  {category.name}
-                </Link>
-              ))}
-              <Link
-                href="/search"
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                <Search className="w-4 h-4" />
-                بحث
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <div className="bg-gradient-to-l from-blue-600 to-blue-800 text-white py-16">
@@ -176,57 +150,7 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <h3 className="text-2xl font-bold mb-4">سبق</h3>
-              <p className="text-gray-400">
-                بوابة سبق الإخبارية - مصدرك الموثوق للأخبار والتحليلات
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">روابط سريعة</h4>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="/" className="text-gray-400 hover:text-white">
-                    الرئيسية
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/search" className="text-gray-400 hover:text-white">
-                    البحث
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/admin" className="text-gray-400 hover:text-white">
-                    لوحة التحكم
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">الفئات</h4>
-              <ul className="space-y-2">
-                {allCategories.slice(0, 5).map((category) => (
-                  <li key={category.id}>
-                    <Link
-                      href={`/categories/${category.slug}`}
-                      className="text-gray-400 hover:text-white"
-                    >
-                      {category.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 pt-8 text-center">
-            <p className="text-gray-400">© 2025 سبق الإخبارية. جميع الحقوق محفوظة.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

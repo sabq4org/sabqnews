@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import Provider from "./_trpc/Provider";
+import { ThemeProvider } from "@/components/ThemeProvider";
+
+
 
 const ibmPlexArabic = IBM_Plex_Sans_Arabic({
   subsets: ["arabic"],
@@ -22,7 +25,13 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <body className={`${ibmPlexArabic.variable} font-sans antialiased`}>
-        <Provider>{children}</Provider>
+        <ThemeProvider>
+          <Provider>
+            
+            {children}
+            
+          </Provider>
+        </ThemeProvider>
       </body>
     </html>
   );

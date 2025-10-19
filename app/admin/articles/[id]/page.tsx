@@ -1,14 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { trpc } from '@/lib/trpc';
 import RichTextEditor from '../../components/RichTextEditor';
 import AIAssistant from '../../components/AIAssistant';
-import { Save, Send, Upload, X, Eye, Star, Zap } from 'lucide-react';
+import { Save, Send, Upload, X, Eye, ArrowLeft, Star, Zap } from 'lucide-react';
 
-export default function NewArticlePage() {
+export default function EditArticlePage() {
   const router = useRouter();
+  const params = useParams();
+  const articleId = params.id as string;
+
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -21,19 +24,43 @@ export default function NewArticlePage() {
   const [seoDescription, setSeoDescription] = useState('');
   const [keywords, setKeywords] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState('');
+  const [currentStatus, setCurrentStatus] = useState<string>('draft');
   const [isFeatured, setIsFeatured] = useState(false);
   const [isBreaking, setIsBreaking] = useState(false);
+
+  // Fetch article data
+  const { data: articleData, isLoading } = trpc.articles.getById.useQuery({ id: articleId });
 
   // Fetch categories
   const { data: categoriesData } = trpc.categories.list.useQuery({});
   const categories = categoriesData?.categories || [];
 
-  // Mutations
-  const createArticle = trpc.articles.create.useMutation({
+  // Update mutation
+  const updateArticle = trpc.articles.update.useMutation({
     onSuccess: () => {
       router.push('/admin/articles');
     },
   });
+
+  // Load article data when fetched
+  useEffect(() => {
+    if (articleData) {
+      const article = articleData;
+      setTitle(article.title);
+      setSubtitle(article.subtitle || '');
+      setCategoryId(article.categoryId);
+      setFeaturedImage(article.featuredImage || '');
+      setImagePreview(article.featuredImage || '');
+      setExcerpt(article.excerpt || '');
+      setContent(article.content);
+      setSeoTitle(article.seoTitle || '');
+      setSeoDescription(article.seoDescription || '');
+      setKeywords(article.tags || []);
+      setCurrentStatus(article.status);
+      setIsFeatured(article.isFeatured || false);
+      setIsBreaking(article.isBreaking || false);
+    }
+  }, [articleData]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,7 +137,8 @@ export default function NewArticlePage() {
 
       const slug = generateSlug(title);
 
-      createArticle.mutate({
+      updateArticle.mutate({
+        id: articleId,
         title,
         slug,
         content,
@@ -119,24 +147,60 @@ export default function NewArticlePage() {
         featuredImage: finalImage || undefined,
         seoTitle: seoTitle || undefined,
         seoDescription: seoDescription || undefined,
-        status,
         subtitle: subtitle || undefined,
         tags: keywords.length > 0 ? keywords : undefined,
+        status,
         isFeatured,
         isBreaking,
       });
     } catch (error: any) {
       alert('حدث خطأ: ' + error.message);
-      console.error('Error submitting article:', error);
+      console.error('Error updating article:', error);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">جاري تحميل المقال...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!articleData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-gray-600">المقال غير موجود</p>
+          <button
+            onClick={() => router.push('/admin/articles')}
+            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            العودة إلى القائمة
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">إنشاء مقال جديد</h1>
-          <p className="text-gray-600 mt-2">أضف مقالاً جديداً إلى بوابة سبق</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">تعديل المقال</h1>
+            <p className="text-gray-600 mt-2">تحديث بيانات المقال</p>
+          </div>
+          <button
+            onClick={() => router.push('/admin/articles')}
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            العودة
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -331,16 +395,12 @@ export default function NewArticlePage() {
               </label>
               <select
                 value={categoryId || ''}
-                onChange={(e) => {
-                  const newCategoryId = e.target.value;
-
-                  setCategoryId(newCategoryId);
-                }}
+                onChange={(e) => setCategoryId(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 dir="rtl"
               >
                 <option value="">اختر فئة...</option>
-                {categories.map((category: any) => (
+                {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
@@ -381,21 +441,9 @@ export default function NewArticlePage() {
 
             {/* AI Assistant */}
             <AIAssistant
-              content={content}
-              title={title}
-              onApplySummary={setExcerpt}
-              onApplyTitle={setTitle}
-              onApplySubtitle={setSubtitle}
-              onApplyKeywords={(keywords) => setKeywords(keywords)}
-              onApplySEO={(seoData) => {
-                if (seoData.title) setSeoTitle(seoData.title);
-                if (seoData.description) setSeoDescription(seoData.description);
-              }}
-              onApplyEditorialElements={(elements) => {
-                setTitle(elements.mainTitle);
-                setSubtitle(elements.subtitle);
-                setExcerpt(elements.summary);
-                setKeywords(elements.keywords);
+              onSuggestion={(suggestion) => {
+                if (suggestion.type === 'title') setTitle(suggestion.content);
+                if (suggestion.type === 'content') setContent(suggestion.content);
               }}
             />
 
@@ -403,24 +451,26 @@ export default function NewArticlePage() {
             <div className="bg-white rounded-lg shadow-sm p-6 space-y-3">
               <button
                 onClick={() => handleSubmit('published')}
-                disabled={createArticle.isPending}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                disabled={updateArticle.isLoading}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Eye className="w-5 h-5" />
-                نشر الآن
+                {currentStatus === 'published' ? 'تحديث المنشور' : 'نشر الآن'}
               </button>
+
               <button
                 onClick={() => handleSubmit('review')}
-                disabled={createArticle.isPending}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                disabled={updateArticle.isLoading}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-5 h-5" />
                 إرسال للمراجعة
               </button>
+
               <button
                 onClick={() => handleSubmit('draft')}
-                disabled={createArticle.isPending}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
+                disabled={updateArticle.isLoading}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-5 h-5" />
                 حفظ كمسودة

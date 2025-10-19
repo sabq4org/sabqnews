@@ -112,6 +112,8 @@ export const articlesRouter = router({
         sourceUrl: z.string().optional(),
         sourceName: z.string().optional(),
         status: z.enum(articleStatusEnum.enumValues).optional(),
+        isFeatured: z.boolean().optional(),
+        isBreaking: z.boolean().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -152,6 +154,8 @@ export const articlesRouter = router({
         sourceName: input.sourceName ?? null,
         status: input.status ?? 'draft',
         publishedAt: input.status === 'published' ? new Date() : null,
+        isFeatured: input.isFeatured ?? false,
+        isBreaking: input.isBreaking ?? false,
         currentRevision: 1,
         lastEditedBy: ctx.user.id,
       }).returning();

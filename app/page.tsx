@@ -2,7 +2,7 @@
 
 import { trpc } from "../lib/trpc";
 import Link from "next/link";
-import type { Category } from "../drizzle/schema";
+import type { Category, Article } from "../drizzle/schema";
 
 export default function Home() {
   const { data: articles, isLoading } = trpc.articles.list.useQuery({
@@ -61,7 +61,7 @@ export default function Home() {
         <h2 className="text-2xl font-bold mb-6">أحدث الأخبار</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {articles?.map((article) => (
+          {articles?.map((article: Article) => (
             <article
               key={article.id}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"

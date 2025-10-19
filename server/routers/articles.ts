@@ -5,7 +5,7 @@ import { protectedProcedure, publicProcedure, router } from "../trpc";
 import { getDb } from '@/lib/db';
 import { 
   articles, 
-  articleStatusEnum, 
+  articleStatus, 
   users,
   categories,
   articleRevisions,
@@ -29,7 +29,7 @@ export const articlesRouter = router({
     .input(
       z.object({
         search: z.string().optional(),
-        status: z.enum(articleStatusEnum.enumValues).optional(),
+        status: z.enum(['draft', 'published', 'archived', 'review', 'approved', 'scheduled', 'killed']).optional(),
         authorId: z.string().optional(),
         categoryId: z.string().optional(),
         limit: z.number().min(1).max(100).default(10),
@@ -128,7 +128,7 @@ export const articlesRouter = router({
         audioUrl: z.string().optional(),
         sourceUrl: z.string().optional(),
         sourceName: z.string().optional(),
-        status: z.enum(articleStatusEnum.enumValues).optional(),
+        status: z.enum(['draft', 'published', 'archived', 'review', 'approved', 'scheduled', 'killed']).optional(),
         isFeatured: z.boolean().optional(),
         isBreaking: z.boolean().optional(),
       })
@@ -304,7 +304,7 @@ export const articlesRouter = router({
     .input(
       z.object({
         id: z.string(),
-        toStatus: z.enum(articleStatusEnum.enumValues),
+        toStatus: z.enum(['draft', 'published', 'archived', 'review', 'approved', 'scheduled', 'killed']),
         comment: z.string().optional(),
       })
     )

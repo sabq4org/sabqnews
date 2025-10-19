@@ -7,6 +7,7 @@ import {
   articles, 
   articleStatusEnum, 
   users,
+  categories,
   articleRevisions,
   editorialComments,
   workflowHistory,
@@ -59,8 +60,23 @@ export const articlesRouter = router({
 
       const [allArticles, totalArticles] = await Promise.all([
         db
-          .select()
+          .select({
+            ...articles,
+            author: {
+              id: users.id,
+              name: users.name,
+              avatar: users.avatar,
+            },
+            category: {
+              id: categories.id,
+              name: categories.name,
+              slug: categories.slug,
+              color: categories.color,
+            },
+          })
           .from(articles)
+          .leftJoin(users, eq(articles.authorId, users.id))
+          .leftJoin(categories, eq(articles.categoryId, categories.id))
           .where(and(...conditions))
           .orderBy(desc(articles.createdAt))
           .limit(limit)

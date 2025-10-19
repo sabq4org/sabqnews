@@ -161,7 +161,6 @@ export const articlesRouter = router({
         revisionNumber: 1,
         title: input.title,
         subtitle: input.subtitle ?? null,
-        slug: articleSlug,
         content: input.content,
         excerpt: input.excerpt ?? null,
         editedBy: ctx.user.id,

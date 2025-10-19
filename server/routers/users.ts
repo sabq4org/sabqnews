@@ -102,7 +102,7 @@ export const usersRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       // التحقق من صلاحيات المستخدم الحالي
-      if (ctx.user.role !== 'admin') {
+      if (ctx.user!.role !== 'admin') {
         throw new Error('غير مصرح - يجب أن تكون مديراً');
       }
 
@@ -164,7 +164,7 @@ export const usersRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       // التحقق من الصلاحيات
-      if (ctx.user.role !== 'admin' && ctx.user.id !== input.id) {
+      if (ctx.user!.role !== 'admin' && ctx.user!.id !== input.id) {
         throw new Error('غير مصرح - يمكنك تعديل حسابك فقط');
       }
 
@@ -186,9 +186,9 @@ export const usersRouter = router({
       const updateData: any = {};
       if (input.name) updateData.name = input.name;
       if (input.email) updateData.email = input.email;
-      if (input.role && ctx.user.role === 'admin') updateData.role = input.role;
+      if (input.role && ctx.user!.role === 'admin') updateData.role = input.role;
       if (input.bio !== undefined) updateData.bio = input.bio;
-      if (input.isActive !== undefined && ctx.user.role === 'admin') {
+      if (input.isActive !== undefined && ctx.user!.role === 'admin') {
         updateData.isActive = input.isActive;
       }
       if (input.avatarUrl !== undefined) updateData.avatarUrl = input.avatarUrl;
@@ -211,7 +211,7 @@ export const usersRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       // فقط المدير أو المستخدم نفسه
-      if (ctx.user.role !== 'admin' && ctx.user.id !== input.id) {
+      if (ctx.user!.role !== 'admin' && ctx.user!.id !== input.id) {
         throw new Error('غير مصرح');
       }
 
@@ -236,12 +236,12 @@ export const usersRouter = router({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
       // فقط المدير
-      if (ctx.user.role !== 'admin') {
+      if (ctx.user!.role !== 'admin') {
         throw new Error('غير مصرح - يجب أن تكون مديراً');
       }
 
       // منع حذف نفسه
-      if (ctx.user.id === input.id) {
+      if (ctx.user!.id === input.id) {
         throw new Error('لا يمكنك حذف حسابك الخاص');
       }
 

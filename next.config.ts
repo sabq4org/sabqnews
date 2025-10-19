@@ -7,9 +7,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // استخدام standalone output لتحسين التوافق مع Vercel
-  output: 'standalone',
-  // تعطيل static generation للصفحات التي تسبب مشاكل
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',

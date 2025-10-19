@@ -33,7 +33,7 @@ import {
   Palette,
 } from 'lucide-react';
 import { useState } from 'react';
-import EmojiPicker from 'emoji-picker-react';
+// import EmojiPicker from 'emoji-picker-react'; // Disabled due to Next.js App Router compatibility issues
 
 interface RichTextEditorProps {
   content: string;
@@ -42,7 +42,7 @@ interface RichTextEditorProps {
 }
 
 export default function RichTextEditor({ content, onChange, placeholder }: RichTextEditorProps) {
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  // const [showEmojiPicker, setShowEmojiPicker] = useState(false); // Disabled emoji picker
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const editor = useEditor({
@@ -254,28 +254,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
 
         <div className="w-px bg-gray-300 mx-1" />
 
-        {/* Emoji */}
-        <div className="relative">
-          <button
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="p-2 rounded hover:bg-gray-200"
-            title="إضافة إيموجي"
-          >
-            <Smile className="w-4 h-4" />
-          </button>
-          {showEmojiPicker && (
-            <div className="absolute top-full left-0 mt-1 z-50">
-              <EmojiPicker
-                onEmojiClick={(emojiData) => {
-                  editor.chain().focus().insertContent(emojiData.emoji).run();
-                  setShowEmojiPicker(false);
-                }}
-                searchPlaceholder="بحث..."
-                skinTonesDisabled
-              />
-            </div>
-          )}
-        </div>
+        {/* Emoji picker disabled due to Next.js App Router compatibility issues */}
 
         {/* Color Picker */}
         <div className="relative">

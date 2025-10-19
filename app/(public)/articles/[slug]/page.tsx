@@ -19,7 +19,9 @@ interface ArticlePageProps {
 }
 
 async function getArticle(slug: string) {
+  console.log("Original slug from params:", slug);
   const decodedSlug = decodeURIComponent(slug);
+  console.log("Decoded slug:", decodedSlug);
 
   const db = getDb();
   
@@ -35,7 +37,9 @@ async function getArticle(slug: string) {
     .where(eq(articles.slug, decodedSlug))
     .limit(1);
 
+  console.log("Database query result for slug:", decodedSlug, result);
   if (!result || result.length === 0) {
+    console.log("Article not found in DB for slug:", decodedSlug);
     return null;
   }
 

@@ -25,6 +25,7 @@ export default function NewArticlePage() {
   // Fetch categories
   const { data: categoriesData } = trpc.categories.list.useQuery({});
   const categories = categoriesData?.categories || [];
+  console.log("Fetched Categories:", categories);
 
   // Mutations
   const createArticle = trpc.articles.create.useMutation({
@@ -90,6 +91,7 @@ export default function NewArticlePage() {
 
     const slug = generateSlug(title);
 
+    console.log("Submitting with Category ID:", categoryId);
     createArticle.mutate({
       title,
       slug,
@@ -305,7 +307,11 @@ export default function NewArticlePage() {
               </label>
               <select
                 value={categoryId || ''}
-                onChange={(e) => setCategoryId(Number(e.target.value))}
+                onChange={(e) => {
+                  const newCategoryId = Number(e.target.value);
+                  console.log("Selected category ID:", newCategoryId);
+                  setCategoryId(newCategoryId);
+                }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 dir="rtl"
               >

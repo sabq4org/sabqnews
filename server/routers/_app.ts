@@ -3,6 +3,8 @@ import { z } from "zod";
 import { getDb } from "../../lib/db";
 import { articles, categories } from "../../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
+import { usersRouter } from "./users";
+import { authRouter } from "./auth";
 
 export const appRouter = router({
   // Articles
@@ -66,6 +68,12 @@ export const appRouter = router({
         .orderBy(categories.displayOrder);
     }),
   }),
+
+  // Users
+  users: usersRouter,
+
+  // Auth
+  auth: authRouter,
 });
 
 export type AppRouter = typeof appRouter;

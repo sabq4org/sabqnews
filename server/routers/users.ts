@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { router, publicProcedure } from '../trpc';
+import { router, publicProcedure, protectedProcedure } from '../trpc';
 import { getDb } from '@/lib/db';
 import { users } from '@/drizzle/schema';
 import { eq, desc, like, or } from 'drizzle-orm';
@@ -8,7 +8,7 @@ import { nanoid } from 'nanoid';
 
 export const usersRouter = router({
   // الحصول على قائمة المستخدمين
-  list: publicProcedure
+  list: protectedProcedure
     .input(
       z.object({
         search: z.string().optional(),
@@ -257,7 +257,7 @@ export const usersRouter = router({
     }),
 
   // إحصائيات المستخدمين
-  stats: publicProcedure.query(async () => {
+  stats: protectedProcedure.query(async () => {
     const db = await getDb();
     if (!db) throw new Error('Database connection failed');
 

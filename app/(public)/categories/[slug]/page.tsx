@@ -67,18 +67,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
 
       {/* Category Header */}
-      <div className="bg-gradient-to-l from-blue-600 to-blue-800 text-white py-12">
-        <div className="relative h-72 md:h-96 bg-gray-900 flex items-center justify-center overflow-hidden">
-          {console.log("Category Hero Image:", category.heroImage)}
+      <div className="relative text-white py-12 overflow-hidden bg-gradient-to-br from-gray-900 to-gray-700">
+        <div className="relative h-72 md:h-96 flex items-center justify-center">
           {category.heroImage && (
             <Image
               src={category.heroImage}
               alt={category.name}
               fill
-              className="object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-300"
+              className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-300"
             />
           )}
-          <div className="relative z-10 text-center text-white p-4">
+          <div className="relative z-10 text-center text-white p-4 bg-black bg-opacity-50 rounded-lg shadow-lg">
             <h1 className="text-4xl md:text-6xl font-extrabold mb-2 drop-shadow-lg" dir="rtl">
               {category.name}
             </h1>

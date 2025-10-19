@@ -319,9 +319,8 @@ export async function generateEditorialElements(content: string): Promise<{
 - استند على فهمك الدلالي للنص وليس فقط الكلمات الظاهرة.
 
 النص:
-"""
 ${content}
-"""`;
+`;
 
     const response = await invokeLLM({
       messages: [
@@ -357,60 +356,38 @@ ${content}
   }
 }
 
+export const RELATED_RECS_PROMPT = `
+أنت مساعد تحرير في صحيفة سعودية رقمية.
+مهمّتك: اقتراح مقالات ذات صلة بالمادة الحالية.
 
-"""
+المطلوب:
+- ارجع حتى 6 توصيات بترتيب الصلة.
+- لكل توصية: {title, url, reason, score من 0 إلى 1}.
+- التزم بالمصادر الداخلية أولاً إن وجدت.
+- لا تكرر الروابط.
+
+الإخراج بصيغة JSON صارمة فقط.
+`;
+
 /**
  * توليد توصيات مقالات ذات صلة باستخدام الذكاء الاصطناعي
  */
-export async function generateRecommendations(
-  articleContent: string,
-  articleTitle: string,
-  articleCategory: string,
-  articleKeywords: string[]
-): Promise<{ title: string; slug: string }[]> {
+export async function generateRelatedArticles(input: {
+  slug?: string;
+  categoryIds?: string[];
+}): Promise<{ title: string; url: string; reason: string; score: number }[]> {
   try {
-    const prompt = `أنت محرك توصيات ذكي متخصص في اقتراح مقالات إخبارية باللغة العربية.
-بناءً على المقال الحالي، قم باقتراح 3 مقالات أخرى ذات صلة وثيقة.
-
-المقال الحالي:
-العنوان: ${articleTitle}
-الفئة: ${articleCategory}
-الكلمات المفتاحية: ${articleKeywords.join(', ')}
-المحتوى: ${articleContent}
-
-قدم 3 توصيات لمقالات ذات صلة. لكل توصية، قم بتضمين العنوان (title) والمفتاح الفريد (slug) الخاص بها. يجب أن تكون عناوين المقالات المقترحة جذابة وواقعية، وأن تتناسب مع سياق المقال الحالي وفئته.
-
-📘 تنسيق الإخراج المطلوب (JSON فقط):
-[
-  {
-    "title": "عنوان المقال الموصى به الأول",
-    "slug": "slug-المقال-الأول"
-  },
-  {
-    "title": "عنوان المقال الموصى به الثاني",
-    "slug": "slug-المقال-الثاني"
-  },
-  {
-    "title": "عنوان المقال الموصى به الثالث",
-    "slug": "slug-المقال-الثالث"
-  }
-]
-
-✳️ تذكير:
-- لا تُضف أي مقدمات أو شروحات خارج JSON.
-- حافظ على الواقعية في العناوين المقترحة.
-- تأكد من أن الـ slug يعكس العنوان بشكل صحيح (يمكن أن يكون مجرد ترجمة URL للعناوين).
-`;
+    const prompt = RELATED_RECS_PROMPT;
 
     const response = await invokeLLM({
       messages: [
         {
           role: "system",
-          content: "أنت محرك توصيات ذكي. قم بتوليد توصيات مقالات بصيغة JSON فقط بدون أي نص إضافي.",
+          content: RELATED_RECS_PROMPT,
         },
         {
           role: "user",
-          content: prompt,
+          content: `المقال الحالي: ${input.slug || ''}، الفئات: ${input.categoryIds?.join(', ') || ''}`,
         },
       ],
       temperature: 0.7,
@@ -424,14 +401,14 @@ export async function generateRecommendations(
 
     const parsed = JSON.parse(responseContent);
     // Validate that parsed is an array of objects with title and slug
-    if (Array.isArray(parsed) && parsed.every(item => typeof item.title === 'string' && typeof item.slug === 'string')) {
+    if (Array.isArray(parsed) && parsed.every(item => typeof item.title === 'string' && typeof item.url === 'string' && typeof item.reason === 'string' && typeof item.score === 'number')) {
       return parsed;
     } else {
       console.error("Invalid JSON format for recommendations:", responseContent);
       return [];
     }
   } catch (error) {
-    console.error("Error generating recommendations:", error);
+    console.error("Error generating related articles:", error);
     return [];
   }
 }

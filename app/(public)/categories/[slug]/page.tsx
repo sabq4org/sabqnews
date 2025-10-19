@@ -68,29 +68,29 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
       {/* Category Header */}
       <div className="relative text-white overflow-hidden bg-gray-900">
-        <div className="relative h-72 md:h-96 flex items-center justify-center pt-12 md:pt-16">
+        <div className="relative h-72 md:h-96 flex items-center justify-center pt-12 md:pt-16 px-4">
           {category.heroImage && (
             <>
               <Image
                 src={category.heroImage}
                 alt={category.name}
                 fill
-                className="absolute inset-0 w-full h-full object-cover opacity-40 transition-opacity duration-300"
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-40 transition-opacity duration-300"
                 unoptimized // Added unoptimized to bypass Next.js Image optimization for external URLs
               />
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
             </>
           )}
-          <div className="relative z-10 text-center text-white p-6 bg-black bg-opacity-60 rounded-lg shadow-2xl mx-4 max-w-3xl">
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-3 drop-shadow-lg leading-tight" dir="rtl">
+          <div className="relative z-10 text-center text-white p-6 max-w-3xl w-full mx-auto">
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-2 drop-shadow-lg leading-tight" dir="rtl">
               {category.name}
             </h1>
-            <div className="flex items-center justify-center gap-4 text-base md:text-xl text-gray-200 mt-2">
+            <div className="flex items-center justify-center gap-4 text-base md:text-xl text-gray-200 mt-3">
               <span dir="rtl" className="flex items-center"><FileText className="inline-block w-5 h-5 ml-1" /> {categoryArticles.length} مقال</span>
               <span dir="rtl" className="flex items-center"><Eye className="inline-block w-5 h-5 ml-1" /> {category.totalViews || 0} مشاهدة</span>
             </div>
             {category.description && (
-              <p className="text-base md:text-xl text-gray-300 mt-4 max-w-2xl mx-auto leading-relaxed" dir="rtl">
+              <p className="text-base md:text-xl text-gray-300 mt-3 max-w-2xl mx-auto leading-relaxed" dir="rtl">
                 {category.description}
               </p>
             )}

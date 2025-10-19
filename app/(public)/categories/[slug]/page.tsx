@@ -74,7 +74,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <Image
                 src={category.heroImage}
                 alt={category.name}
-                            className="absolute inset-0 w-full h-full object-cover object-center opacity-40 transition-opacity duration-300"           unoptimized // Added unoptimized to bypass Next.js Image optimization for external URLs
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-40 transition-opacity duration-300"
+                unoptimized // Added unoptimized to bypass Next.js Image optimization for external URLs
               />
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
             </>
@@ -91,7 +92,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             )}
             {/* Transparent label for stats */}
             {/* Transparent labels for stats */}
-            <div className="flex flex-wrap justify-center gap-4 mt-6">              <span dir="rtl" className="flex items-center text-lg md:text-xl text-white px-5 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
+            <div className="flex flex-wrap justify-center gap-4 mt-6">
+              <span dir="rtl" className="flex items-center text-lg md:text-xl text-white px-5 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
                 <FileText className="inline-block w-5 h-5 ml-2" /> {categoryArticles.length} مقال
               </span>
               <span dir="rtl" className="flex items-center text-lg md:text-xl text-white px-5 py-2 bg-black bg-opacity-40 rounded-full shadow-md">

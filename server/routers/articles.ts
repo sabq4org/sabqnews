@@ -140,7 +140,7 @@ export const articlesRouter = router({
         title: input.title,
         subtitle: input.subtitle ?? null,
         slug: articleSlug,
-        content: input.content,
+        content: String(input.content),
         excerpt: input.excerpt ?? null,
         authorId: ctx.user.id,
         categoryId: input.categoryId,
@@ -168,7 +168,7 @@ export const articlesRouter = router({
         revisionNumber: 1,
         title: input.title,
         subtitle: input.subtitle ?? null,
-        content: input.content,
+        content: String(input.content),
         excerpt: input.excerpt ?? null,
         editedBy: ctx.user.id,
         editReason: 'نسخة أولية',
@@ -523,7 +523,7 @@ export const articlesRouter = router({
         articleId: input.articleId,
         userId: ctx.user.id,
         blockId: input.blockId,
-        content: input.content,
+        content: String(input.content),
       }).returning();
 
       return newComment[0];

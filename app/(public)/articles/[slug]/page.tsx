@@ -119,7 +119,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           )}
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            <span>
+                        <span suppressHydrationWarning>
               {new Date(article.publishedAt || article.createdAt).toLocaleDateString('ar-SA', {
                 year: 'numeric',
                 month: 'long',

@@ -63,6 +63,7 @@ export const categories = pgTable(
     slug: varchar("slug", { length: 255 }).notNull().unique(),
     description: text("description"),
     iconUrl: varchar("icon_url", { length: 500 }),
+    heroImage: varchar("hero_image", { length: 500 }),
     color: varchar("color", { length: 50 }),
     parentId: varchar("parent_id", { length: 64 }),
     displayOrder: integer("display_order").default(0),

@@ -5,6 +5,7 @@ import { articles, categories } from "../../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 import { usersRouter } from "./users";
 import { authRouter } from "./auth";
+import { categoriesRouter } from "./categories";
 
 export const appRouter = router({
   // Articles
@@ -58,16 +59,7 @@ export const appRouter = router({
   }),
 
   // Categories
-  categories: router({
-    list: publicProcedure.query(async () => {
-      const db = await getDb();
-      return await db
-        .select()
-        .from(categories)
-        .where(eq(categories.isActive, true))
-        .orderBy(categories.displayOrder);
-    }),
-  }),
+  categories: categoriesRouter,
 
   // Users
   users: usersRouter,

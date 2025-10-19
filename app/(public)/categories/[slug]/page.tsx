@@ -68,25 +68,26 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
       {/* Category Header */}
       <div className="bg-gradient-to-l from-blue-600 to-blue-800 text-white py-12">
-        <div className="relative h-64 bg-gray-800 flex items-center justify-center overflow-hidden">
+        <div className="relative h-72 md:h-96 bg-gray-900 flex items-center justify-center overflow-hidden">
+          {console.log("Category Hero Image:", category.heroImage)}
           {category.heroImage && (
             <Image
               src={category.heroImage}
               alt={category.name}
               fill
-              className="object-cover opacity-50"
+              className="object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-300"
             />
           )}
           <div className="relative z-10 text-center text-white p-4">
-            <h1 className="text-5xl font-extrabold mb-2 drop-shadow-lg" dir="rtl">
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-2 drop-shadow-lg" dir="rtl">
               {category.name}
             </h1>
-            <div className="flex items-center justify-center gap-4 text-lg text-blue-100">
-              <span dir="rtl">{categoryArticles.length} مقال</span>
-              <span dir="rtl">• {category.totalViews || 0} مشاهدة</span>
+            <div className="flex items-center justify-center gap-4 text-base md:text-xl text-blue-100">
+              <span dir="rtl"><FileText className="inline-block w-5 h-5 ml-1" /> {categoryArticles.length} مقال</span>
+              <span dir="rtl"><Eye className="inline-block w-5 h-5 ml-1" /> {category.totalViews || 0} مشاهدة</span>
             </div>
             {category.description && (
-              <p className="text-xl text-blue-100 mt-2 max-w-2xl mx-auto" dir="rtl">
+              <p className="text-base md:text-xl text-blue-100 mt-2 max-w-2xl mx-auto" dir="rtl">
                 {category.description}
               </p>
             )}

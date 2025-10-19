@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { trpc } from '@/lib/trpc';
 import RichTextEditor from '../../components/RichTextEditor';
 import AIAssistant from '../../components/AIAssistant';
-import { Save, Send, Upload, X } from 'lucide-react';
+import { Save, Send, Upload, X, Eye } from 'lucide-react';
 
 export default function NewArticlePage() {
   const router = useRouter();

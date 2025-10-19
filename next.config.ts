@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // استخدام standalone output لتحسين التوافق مع Vercel
+  // تعطيل Static Generation مؤقتًا لتجاوز خطأ <Html> أثناء البناء.
+  // هذا سيجعل جميع الصفحات تُعرض من جانب الخادم (SSR) بدلاً من توليدها بشكل ثابت (SSG).
+  // إذا احتجنا SSG لاحقًا، فسيتعين علينا التحقق بعمق من السبب الجذري لخطأ <Html>.
+  output: 'standalone',
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',

@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AISummary from '@/components/AISummary';
 import RecommendationsSection from '@/components/RecommendationsSection';
+import SafeHTML from '@/components/SafeHTML';
 
 interface ArticlePageProps {
   params: {
@@ -151,10 +152,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         )}
 
         {/* Content */}
-        <div
+        <SafeHTML
+          html={article.content as string}
           className="prose prose-lg max-w-none mb-8 dark:prose-invert"
           dir="rtl"
-          dangerouslySetInnerHTML={{ __html: article.content as string }}
         />
 
         {/* Share */}

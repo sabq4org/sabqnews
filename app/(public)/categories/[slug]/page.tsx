@@ -68,13 +68,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
       {/* Category Header */}
       <div className="relative text-white overflow-hidden bg-gray-900">
-        <div className="relative h-72 md:h-96 flex items-center justify-center pt-12 md:pt-16 px-4">
+        <div className="relative h-72 md:h-96 flex flex-col items-center justify-center pt-12 md:pt-16 px-4 text-center">
           {category.heroImage && (
             <>
               <Image
                 src={category.heroImage}
                 alt={category.name}
-                className="absolute inset-0 w-full h-full object-cover object-center opacity-40 transition-opacity duration-300"
+                className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-300"
                 unoptimized // Added unoptimized to bypass Next.js Image optimization for external URLs
               />
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
@@ -92,12 +92,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             )}
             {/* Transparent label for stats */}
             {/* Transparent labels for stats */}
-            <div className="flex flex-wrap justify-center gap-4 mt-6">
-              <span dir="rtl" className="flex items-center text-lg md:text-xl text-white px-5 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
-                <FileText className="inline-block w-5 h-5 ml-2" /> {categoryArticles.length} مقال
+            <div className="flex flex-wrap justify-center items-center gap-4 mt-6">
+              <span dir="rtl" className="flex items-center text-base md:text-lg text-white px-4 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
+                <FileText className="inline-block w-4 h-4 ml-2" /> {categoryArticles.length} مقال
               </span>
-              <span dir="rtl" className="flex items-center text-lg md:text-xl text-white px-5 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
-                <Eye className="inline-block w-5 h-5 ml-2" /> {category.totalViews || 0} مشاهدة
+              <span dir="rtl" className="flex items-center text-base md:text-lg text-white px-4 py-2 bg-black bg-opacity-40 rounded-full shadow-md">
+                <Eye className="inline-block w-4 h-4 ml-2" /> {category.totalViews || 0} مشاهدة
               </span>
             </div>
           </div>

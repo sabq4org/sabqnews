@@ -30,6 +30,7 @@ async function getCategoryWithArticles(slug: string) {
   }
 
   const category = categoryResult[0];
+  console.log("Category data (server-side):", category);
 
   // Get articles in this category
   const categoryArticles = await db

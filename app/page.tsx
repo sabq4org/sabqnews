@@ -62,12 +62,51 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {articles && articles.length > 0 ? (
+        {articles && articles.articles.length > 0 ? (
           <>
             {/* Featured Article */}
             <section className="mb-12">
               <h2 className="text-2xl font-bold mb-6">المقالة المميزة</h2>
-              {articles[0] && (
+              {articles.articles[0] && (
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+                    {articles.articles[0].featuredImage && (
+                      <img
+                        src={articles.articles[0].featuredImage}
+                        alt={articles.articles[0].title}
+                        className="w-full h-64 md:h-auto object-cover"
+                      />
+                    )}
+                    <div className="md:col-span-2 p-6">
+                      <h3 className="text-2xl font-bold mb-3 text-gray-900">
+                        <Link
+                          href={`/article/${articles.articles[0].slug}`}
+                          className="hover:text-blue-600"
+                        >
+                          {articles.articles[0].title}
+                        </Link>
+                      </h3>
+                      {articles.articles[0].excerpt && (
+                        <p className="text-gray-600 mb-4">{articles.articles[0].excerpt}</p>
+                      )}
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <span>👤 {articles.articles[0].authorId}</span>
+                        <span>
+                          📅{" "}
+                          {articles.articles[0].publishedAt
+                            ? new Date(articles.articles[0].publishedAt).toLocaleDateString("ar-SA")
+                            : ""}
+                        </span>
+                      </div>
+                      <div className="flex gap-4 mt-4 text-sm text-gray-600">
+                        <span>👁️ {articles.articles[0].views || 0} مشاهدة</span>
+                        <span>❤️ {articles.articles[0].likes || 0} إعجاب</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </section>
                 <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
                     {articles[0].featuredImage && (
@@ -113,7 +152,7 @@ export default function Home() {
               <h2 className="text-2xl font-bold mb-6">أحدث الأخبار</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {articles.slice(1).map((article: Article) => (
+                {articles.articles.slice(1).map((article: Article) => (
                   <article
                     key={article.id}
                     className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"

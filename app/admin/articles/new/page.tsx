@@ -6,7 +6,7 @@ import { trpc } from '@/lib/trpc';
 import RichTextEditor from '../../components/RichTextEditor';
 import AIAssistant from '../../components/AIAssistant';
 import { Save, Send, Upload, X, Eye, Star, Zap } from 'lucide-react';
-import { slugify } from '@/lib/utils';
+
 
 export default function NewArticlePage() {
   const router = useRouter();
@@ -102,11 +102,11 @@ export default function NewArticlePage() {
         finalImage = uploadData.url;
       }
 
-      const slug = slugify(title);
+
 
       createArticle.mutate({
         title,
-        slug,
+
         content,
         excerpt: excerpt || undefined,
         categoryId,

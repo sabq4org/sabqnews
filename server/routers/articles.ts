@@ -154,7 +154,7 @@ export const articlesRouter = router({
         sourceUrl: input.sourceUrl ?? null,
         sourceName: input.sourceName ?? null,
         status: input.status ?? 'draft',
-        publishedAt: input.status === 'published' ? new Date() : null,
+        publishedAt: input.status === 'published' ? new Date().toISOString() : null,
         isFeatured: input.isFeatured === undefined ? false : input.isFeatured,
         isBreaking: input.isBreaking === undefined ? false : input.isBreaking,
         currentRevision: 1,
@@ -233,10 +233,10 @@ export const articlesRouter = router({
       if (input.content !== undefined || input.title !== undefined) {
         fieldsToUpdate.currentRevision = newRevisionNumber;
         fieldsToUpdate.lastEditedBy = ctx.user.id;
-        fieldsToUpdate.updatedAt = new Date();
+        fieldsToUpdate.updatedAt = new Date().toISOString();
       } else if (input.isFeatured !== undefined || input.isBreaking !== undefined) {
         // إذا كان التحديث فقط لـ isFeatured أو isBreaking، قم بتحديث updatedAt فقط
-        fieldsToUpdate.updatedAt = new Date();
+        fieldsToUpdate.updatedAt = new Date().toISOString();
       }
 
       let updatedArticle;

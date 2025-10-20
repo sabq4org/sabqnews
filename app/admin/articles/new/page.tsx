@@ -113,6 +113,7 @@ export default function NewArticlePage() {
         featuredImage: finalImage || undefined,
         seoTitle: seoTitle || undefined,
         seoDescription: seoDescription || undefined,
+        seoKeywords: keywords.length > 0 ? keywords : undefined,
         status,
         subtitle: subtitle || undefined,
         tags: keywords.length > 0 ? keywords : undefined,

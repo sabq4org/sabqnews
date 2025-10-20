@@ -99,7 +99,7 @@ export const articlesRouter = router({
       z.object({
         title: z.string().min(1).max(500),
         subtitle: z.string().optional(),
-        slug: z.string().min(1).max(500),
+
         content: z.any(),
         excerpt: z.string().optional(),
         categoryId: z.string().optional(),

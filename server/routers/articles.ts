@@ -15,6 +15,7 @@ import {
 } from '@/drizzle/schema';
 import { count, eq, and, like, desc, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import slugify from 'slugify';
 
 
 
@@ -125,11 +126,11 @@ export const articlesRouter = router({
       const db = getDb();
       const articleId = nanoid();
 
-      let articleSlug = nanoid(8); // توليد slug فريد قصير
+      let articleSlug = slugify(input.title, { lower: true, trim: true, locale: 'ar' });
       let slugExists = await db.select({ id: articles.id }).from(articles).where(eq(articles.slug, articleSlug));
       let counter = 1;
       while (slugExists.length > 0) {
-        articleSlug = nanoid(8); // توليد slug فريد قصير جديد
+        articleSlug = slugify(`${input.title}-${counter}`, { lower: true, trim: true, locale: 'ar' });
         slugExists = await db.select({ id: articles.id }).from(articles).where(eq(articles.slug, articleSlug));
         counter++;
         if (counter > 10) throw new Error('فشل في توليد slug فريد بعد عدة محاولات'); // منع حلقة لا نهائية

@@ -1,3 +1,5 @@
+"use client";
+
 import Image from 'next/image';
 import { getDb } from '@/lib/db';
 import { generateSummary, generateRelatedArticles } from '@/lib/ai-services';

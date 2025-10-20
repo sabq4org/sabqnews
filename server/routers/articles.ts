@@ -125,15 +125,14 @@ export const articlesRouter = router({
       const db = getDb();
       const articleId = nanoid();
 
-      let articleSlug = input.slug;
+      let articleSlug = nanoid(8); // توليد slug فريد قصير
       let slugExists = await db.select({ id: articles.id }).from(articles).where(eq(articles.slug, articleSlug));
       let counter = 1;
       while (slugExists.length > 0) {
-        articleSlug = `${input.slug}-${nanoid(4)}`; // إضافة جزء عشوائي قصير
+        articleSlug = nanoid(8); // توليد slug فريد قصير جديد
         slugExists = await db.select({ id: articles.id }).from(articles).where(eq(articles.slug, articleSlug));
-        counter++;
-        if (counter > 10) throw new Error('فشل في توليد slug فريد بعد عدة محاولات'); // منع حلقة لا نهائية
-      }
+        counter++;        if (counter > 10) throw new Error(\'فشل في توليد slug فريد بعد عدة محاولات\'); // منع حلقة لا نهائية
+      }      }
 
       const newArticle = await db.insert(articles).values({
         id: articleId,
@@ -145,18 +144,18 @@ export const articlesRouter = router({
         authorId: ctx.user.id,
         categoryId: input.categoryId ?? null,
         featuredImage: input.featuredImage ?? null,
-        tags: input.tags !== undefined ? JSON.stringify(input.tags) : null,
+        tags: input.tags && input.tags.length > 0 ? JSON.stringify(input.tags) : null,
         seoTitle: input.seoTitle ?? null,
         seoDescription: input.seoDescription ?? null,
-        seoKeywords: input.seoKeywords !== undefined ? JSON.stringify(input.seoKeywords) : null,
+        seoKeywords: input.seoKeywords && input.seoKeywords.length > 0 ? JSON.stringify(input.seoKeywords) : null,
         videoUrl: input.videoUrl ?? null,
         audioUrl: input.audioUrl ?? null,
         sourceUrl: input.sourceUrl ?? null,
         sourceName: input.sourceName ?? null,
         status: input.status ?? 'draft',
         publishedAt: input.status === 'published' ? new Date() : null,
-        isFeatured: input.isFeatured ?? false,
-        isBreaking: input.isBreaking ?? false,
+        isFeatured: input.isFeatured === undefined ? false : input.isFeatured,
+        isBreaking: input.isBreaking === undefined ? false : input.isBreaking,
         currentRevision: 1,
         lastEditedBy: ctx.user.id,
       }).returning();

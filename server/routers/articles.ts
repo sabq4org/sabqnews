@@ -168,7 +168,7 @@ export const articlesRouter = router({
         revisionNumber: 1,
         title: input.title,
         subtitle: input.subtitle ?? null,
-        content: JSON.stringify(input.content ?? {}),
+        content: JSON.stringify({ html: String(input.content ?? "") }),
         excerpt: input.excerpt ?? null,
         editedBy: ctx.user.id,
         editReason: 'نسخة أولية',

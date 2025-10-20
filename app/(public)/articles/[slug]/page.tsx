@@ -85,18 +85,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const categoryBasedRecommendations = await getRelatedArticles(article.id, article.categoryId);
 
   // Generate AI recommendations if article has tags (keywords)
-  let aiRecommendations: { title: string; slug: string }[] = [];
+  let aiRecommendations: { title: string; url: string; reason: string; score: number }[] = [];
   if (article.tags && Array.isArray(article.tags) && article.tags.length > 0) {
-    aiRecommendations = await generateRelatedArticles(
+aiRecommendations = await generateRelatedArticles(
       article.content as string,
       article.title,
-      category?.name || '',
+      category?.name || 
       article.tags as string[]
     );
   }
 
   // Prioritize AI recommendations if available, otherwise use category-based
-  const finalRecommendations = aiRecommendations.length > 0 ? aiRecommendations : categoryBasedRecommendations;
+  const finalRecommendations = aiRecommendations.length > 0 ? aiRecommendations.map(rec => ({ ...rec, slug: rec.url })) : categoryBasedRecommendations;
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">

@@ -372,10 +372,12 @@ export const RELATED_RECS_PROMPT = `
 /**
  * توليد توصيات مقالات ذات صلة باستخدام الذكاء الاصطناعي
  */
-export async function generateRelatedArticles(input: {
-  slug?: string;
-  categoryIds?: string[];
-}): Promise<{ title: string; url: string; reason: string; score: number }[]> {
+export async function generateRelatedArticles(
+  articleContent: string,
+  articleTitle: string,
+  categoryName: string,
+  articleTags: string[]
+): Promise<{ title: string; url: string; reason: string; score: number }[]> {
   try {
     const prompt = RELATED_RECS_PROMPT;
 
@@ -387,11 +389,31 @@ export async function generateRelatedArticles(input: {
         },
         {
           role: "user",
-          content: `المقال الحالي: ${input.slug || ''}، الفئات: ${input.categoryIds?.join(', ') || ''}`,
+          content: `المقال الحالي: ${articleTitle}\nالمحتوى: ${articleContent}\nالفئة: ${categoryName}\nالكلمات المفتاحية: ${articleTags.join(", ")}`,
         },
       ],
       temperature: 0.7,
-      response_format: { type: "json_object" },
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "related_articles_recommendations",
+          strict: true,
+          schema: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                title: { type: "string" },
+                url: { type: "string" },
+                reason: { type: "string" },
+                score: { type: "number" },
+              },
+              required: ["title", "url", "reason", "score"],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
     });
 
     const responseContent = response.choices[0]?.message?.content;
